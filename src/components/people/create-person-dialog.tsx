@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { PageActionButton } from "@/shared/components/layout/page-action-button";
 import {
   Dialog,
   DialogContent,
@@ -13,14 +14,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createPerson } from "@/lib/actions/people";
-import { relationshipTypes } from "@/lib/validations/person";
+import { createPerson } from "@/modules/people/actions/people.actions";
+import { relationshipTypes } from "@/modules/people/schemas/person.schema";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-export function CreatePersonDialog() {
+type CreatePersonDialogProps = {
+  onCreated?: (personId: string, personName: string) => void;
+};
+
+export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
   const t = useTranslations("people");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -30,6 +35,7 @@ export function CreatePersonDialog() {
   const [relationship, setRelationship] =
     useState<(typeof relationshipTypes)[number]>("OTHER");
   const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   function resetForm() {
     setName("");
@@ -39,16 +45,29 @@ export function CreatePersonDialog() {
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
     startTransition(async () => {
-      const person = await createPerson({
+      const result = await createPerson({
         name,
         relationship,
         notes: notes || undefined,
       });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
       setOpen(false);
       resetForm();
-      router.push(`/people/${person.id}`);
+
+      if (onCreated) {
+        onCreated(result.data.id, result.data.name);
+      } else {
+        router.push(`/people?person=${result.data.id}`);
+      }
+
       router.refresh();
     });
   }
@@ -57,10 +76,10 @@ export function CreatePersonDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="gap-2 shadow-sm transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98]">
+          <PageActionButton>
             <Plus className="size-4" />
             {t("addPerson")}
-          </Button>
+          </PageActionButton>
         }
       />
       <DialogContent className="sm:max-w-md">
@@ -108,6 +127,9 @@ export function CreatePersonDialog() {
               rows={3}
             />
           </div>
+          {error ? (
+            <p className="text-sm text-destructive">{error}</p>
+          ) : null}
           <DialogFooter>
             <Button
               type="button"

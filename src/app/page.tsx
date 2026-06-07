@@ -1,8 +1,5 @@
 import { buttonVariants } from "@/components/ui/button";
-import {
-  getCurrentUserProfile,
-  syncUserProfileFromClerk,
-} from "@/lib/auth";
+import { resolveUserProfile } from "@/modules/auth/server/session";
 import { cn } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
@@ -14,8 +11,7 @@ export default async function LandingPage() {
   const t = await getTranslations("landing");
 
   if (userId) {
-    const profile =
-      (await getCurrentUserProfile()) ?? (await syncUserProfileFromClerk());
+    const profile = await resolveUserProfile();
 
     redirect(profile?.onboardingCompleted ? "/today" : "/onboarding");
   }

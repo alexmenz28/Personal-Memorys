@@ -1,14 +1,10 @@
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
-import {
-  getCurrentUserProfile,
-  syncUserProfileFromClerk,
-} from "@/lib/auth";
+import { resolveUserProfile } from "@/modules/auth/server/session";
 import { getTranslations } from "next-intl/server";
 
 export default async function OnboardingPage() {
   const t = await getTranslations("onboarding");
-  const profile =
-    (await getCurrentUserProfile()) ?? (await syncUserProfileFromClerk());
+  const profile = await resolveUserProfile();
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center px-6 py-12">

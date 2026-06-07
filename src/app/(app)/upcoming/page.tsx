@@ -1,13 +1,11 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { EmptyState } from "@/components/ui/empty-state";
-import { getTranslations } from "next-intl/server";
+import { UpcomingPageContent } from "@/modules/calendar/components/upcoming-page-content";
+import { ContentSkeleton } from "@/shared/components/layout/content-skeleton";
+import { Suspense } from "react";
 
-export default async function UpcomingPage() {
-  const t = await getTranslations("upcoming");
-
+export default function UpcomingPage() {
   return (
-    <AppShell title={t("title")} subtitle={t("subtitle")}>
-      <EmptyState message={t("empty")} />
-    </AppShell>
+    <Suspense fallback={<ContentSkeleton />}>
+      <UpcomingPageContent />
+    </Suspense>
   );
 }

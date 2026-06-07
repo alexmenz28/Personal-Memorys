@@ -1,6 +1,6 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { SettingsForm } from "@/components/settings/settings-form";
-import { requireCurrentUserProfile } from "@/lib/auth";
+import { requireCurrentUserProfile } from "@/modules/auth/server/session";
+import { AppPage } from "@/shared/components/layout/page-chrome";
 import { getTranslations } from "next-intl/server";
 
 export default async function SettingsPage() {
@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   const profile = await requireCurrentUserProfile();
 
   return (
-    <AppShell title={t("title")}>
+    <AppPage title={t("title")}>
       <SettingsForm
         initialTheme={profile.theme}
         initialValues={{
@@ -18,6 +18,6 @@ export default async function SettingsPage() {
           regionCode: profile.regionCode ?? undefined,
         }}
       />
-    </AppShell>
+    </AppPage>
   );
 }

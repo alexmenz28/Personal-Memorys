@@ -11,7 +11,9 @@
     "upcoming": "Upcoming",
     "people": "People",
     "undated": "Undated",
-    "settings": "Settings"
+    "settings": "Settings",
+    "collapse": "Collapse",
+    "expand": "Expand menu"
   },
   "landing": {
     "title": "Remember what matters",
@@ -23,12 +25,26 @@
     "title": "Today",
     "empty": "Nothing scheduled for today.",
     "holidays": "Holidays",
-    "events": "Your events"
+    "events": "Your events",
+    "noHolidays": "No public holidays today.",
+    "noEvents": "No personal events today."
   },
   "upcoming": {
     "title": "Upcoming",
     "subtitle": "Next 30 days",
-    "empty": "No upcoming events in the next 30 days."
+    "empty": "No upcoming events in the next 30 days.",
+    "holiday": "Holiday",
+    "event": "Event"
+  },
+  "events": {
+    "addEvent": "Add event",
+    "addEventDescription": "Save a date or an idea for later.",
+    "title": "Title",
+    "titlePlaceholder": "Anniversary dinner",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional details...",
+    "date": "Date",
+    "undated": "No date yet (save for later)"
   },
   "people": {
     "title": "People",
@@ -86,6 +102,7 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
+    "themeError": "Could not save theme preference. Please try again.",
     "language": "Language",
     "timezone": "Timezone",
     "timezoneHint": "Suggested automatically from your country. You can change it if needed.",

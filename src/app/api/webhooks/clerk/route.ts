@@ -1,7 +1,8 @@
-import { db } from "@/lib/db";
+import { profileRepository } from "@/modules/profile/server/repository";
+import { db } from "@/shared/server/db";
+import type { WebhookEvent } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { Webhook } from "svix";
-import type { WebhookEvent } from "@clerk/nextjs/server";
 
 export async function POST(request: Request) {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
@@ -41,17 +42,9 @@ export async function POST(request: Request) {
       )?.email_address ?? event.data.email_addresses?.[0]?.email_address;
 
     if (email) {
-      await db.userProfile.upsert({
-        where: { clerkUserId: event.data.id },
-        update: { email },
-        create: {
-          clerkUserId: event.data.id,
-          email,
-          countryCode: "US",
-          subscription: {
-            create: {},
-          },
-        },
+      await profileRepository.upsertFromClerk({
+        clerkUserId: event.data.id,
+        email,
       });
     }
   }

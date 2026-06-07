@@ -11,7 +11,9 @@
     "upcoming": "Próximos",
     "people": "Personas",
     "undated": "Sin fecha",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "collapse": "Contraer",
+    "expand": "Expandir menú"
   },
   "landing": {
     "title": "Recuerda lo que importa",
@@ -23,12 +25,26 @@
     "title": "Hoy",
     "empty": "Nada programado para hoy.",
     "holidays": "Festividades",
-    "events": "Tus eventos"
+    "events": "Tus eventos",
+    "noHolidays": "No hay festividades públicas hoy.",
+    "noEvents": "No tienes eventos personales hoy."
   },
   "upcoming": {
     "title": "Próximos",
     "subtitle": "Próximos 30 días",
-    "empty": "No hay eventos en los próximos 30 días."
+    "empty": "No hay eventos en los próximos 30 días.",
+    "holiday": "Festividad",
+    "event": "Evento"
+  },
+  "events": {
+    "addEvent": "Agregar evento",
+    "addEventDescription": "Guarda una fecha o una idea para después.",
+    "title": "Título",
+    "titlePlaceholder": "Cena de aniversario",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Detalles opcionales...",
+    "date": "Fecha",
+    "undated": "Sin fecha (guardar para después)"
   },
   "people": {
     "title": "Personas",
@@ -86,6 +102,7 @@
     "themeLight": "Claro",
     "themeDark": "Oscuro",
     "themeSystem": "Sistema",
+    "themeError": "No se pudo guardar el tema. Inténtalo de nuevo.",
     "language": "Idioma",
     "timezone": "Zona horaria",
     "timezoneHint": "Se sugiere automáticamente según tu país. Puedes cambiarla si lo necesitas.",

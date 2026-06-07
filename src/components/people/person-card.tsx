@@ -5,7 +5,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
 
 type PersonCardProps = {
   id: string;
@@ -14,6 +13,7 @@ type PersonCardProps = {
   notes?: string | null;
   preferencesCount: number;
   notesCount: number;
+  onSelect?: (personId: string, personName: string) => void;
 };
 
 export function PersonCard({
@@ -23,6 +23,7 @@ export function PersonCard({
   notes,
   preferencesCount,
   notesCount,
+  onSelect,
 }: PersonCardProps) {
   const t = useTranslations("people");
   const initials = name
@@ -32,8 +33,21 @@ export function PersonCard({
     .join("")
     .toUpperCase();
 
+  function handleClick() {
+    onSelect?.(id, name);
+  }
+
+  function handleMouseEnter() {
+    void fetchPersonDetailPrefetch(id);
+  }
+
   return (
-    <Link href={`/people/${id}`} className="group block">
+    <button
+      type="button"
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      className="group block w-full text-left"
+    >
       <Card className="border-border/60 bg-card/80 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
         <CardContent className="flex items-center gap-4 p-4">
           <Avatar className="size-12 border border-border/60">
@@ -62,6 +76,19 @@ export function PersonCard({
           <ChevronRight className="size-4 text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-foreground" />
         </CardContent>
       </Card>
-    </Link>
+    </button>
+  );
+}
+
+const prefetchCache = new Set<string>();
+
+function fetchPersonDetailPrefetch(personId: string) {
+  if (prefetchCache.has(personId)) {
+    return;
+  }
+
+  prefetchCache.add(personId);
+  void import("@/modules/people/actions/people.actions").then(
+    ({ fetchPersonDetail }) => fetchPersonDetail(personId),
   );
 }

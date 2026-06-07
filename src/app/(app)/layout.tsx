@@ -1,6 +1,7 @@
-import { ThemeSync } from "@/components/settings/theme-sync";
-import { getCurrentUserProfile, syncUserProfileFromClerk } from "@/lib/auth";
-import type { ThemePreference } from "@/lib/theme";
+import { ThemeSync } from "@/modules/profile/components/theme-sync";
+import { resolveUserProfile } from "@/modules/auth/server/session";
+import { AppShellLayout } from "@/shared/components/layout/app-shell-layout";
+import type { ThemePreference } from "@/shared/lib/theme";
 import { redirect } from "next/navigation";
 
 export default async function AppLayout({
@@ -8,11 +9,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let profile = await getCurrentUserProfile();
-
-  if (!profile) {
-    profile = await syncUserProfileFromClerk();
-  }
+  const profile = await resolveUserProfile();
 
   if (!profile) {
     redirect("/sign-in");
@@ -25,7 +22,7 @@ export default async function AppLayout({
   return (
     <>
       <ThemeSync theme={profile.theme as ThemePreference} />
-      {children}
+      <AppShellLayout>{children}</AppShellLayout>
     </>
   );
 }

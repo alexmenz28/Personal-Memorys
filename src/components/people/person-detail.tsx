@@ -15,11 +15,11 @@ import {
   deletePersonNote,
   deletePreference,
   updatePerson,
-} from "@/lib/actions/people";
+} from "@/modules/people/actions/people.actions";
 import {
   preferenceCategories,
   relationshipTypes,
-} from "@/lib/validations/person";
+} from "@/modules/people/schemas/person.schema";
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -47,9 +47,17 @@ type PersonDetailProps = {
     preferences: Preference[];
     personNotes: PersonNote[];
   };
+  variant?: "page" | "panel";
+  onBack?: () => void;
+  onDeleted?: () => void;
 };
 
-export function PersonDetail({ person }: PersonDetailProps) {
+export function PersonDetail({
+  person,
+  variant = "page",
+  onBack,
+  onDeleted,
+}: PersonDetailProps) {
   const t = useTranslations("people");
   const tCommon = useTranslations("common");
   const router = useRouter();
@@ -62,6 +70,7 @@ export function PersonDetail({ person }: PersonDetailProps) {
   const [prefLabel, setPrefLabel] = useState("");
   const [prefValue, setPrefValue] = useState("");
   const [noteContent, setNoteContent] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const initials = person.name
     .split(" ")
@@ -71,12 +80,19 @@ export function PersonDetail({ person }: PersonDetailProps) {
     .toUpperCase();
 
   function saveProfile() {
+    setError(null);
     startTransition(async () => {
-      await updatePerson(person.id, {
+      const result = await updatePerson(person.id, {
         name,
         relationship: relationship as (typeof relationshipTypes)[number],
         notes: notes || undefined,
       });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
       router.refresh();
     });
   }
@@ -88,7 +104,13 @@ export function PersonDetail({ person }: PersonDetailProps) {
 
     startTransition(async () => {
       await deletePerson(person.id);
-      router.push("/people");
+
+      if (onDeleted) {
+        onDeleted();
+      } else {
+        router.push("/people");
+      }
+
       router.refresh();
     });
   }
@@ -126,17 +148,8 @@ export function PersonDetail({ person }: PersonDetailProps) {
     });
   }
 
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <Link
-        href="/people"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        {t("backToPeople")}
-      </Link>
-
-      <FadeIn>
+  const isPanel = variant === "panel";
+  const profileCard = (
         <Card className="border-border/60 bg-card/80">
           <CardContent className="flex items-start gap-4 p-6">
             <Avatar className="size-16 border border-border/60">
@@ -156,7 +169,32 @@ export function PersonDetail({ person }: PersonDetailProps) {
             </div>
           </CardContent>
         </Card>
-      </FadeIn>
+  );
+
+  return (
+    <div className={isPanel ? "space-y-6" : "mx-auto max-w-3xl space-y-6"}>
+      {!isPanel ? (
+        onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            {t("backToPeople")}
+          </button>
+        ) : (
+          <Link
+            href="/people"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="size-4" />
+            {t("backToPeople")}
+          </Link>
+        )
+      ) : null}
+
+      {isPanel ? profileCard : <FadeIn>{profileCard}</FadeIn>}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border/60">
@@ -196,6 +234,9 @@ export function PersonDetail({ person }: PersonDetailProps) {
                 rows={4}
               />
             </div>
+            {error ? (
+              <p className="text-sm text-destructive">{error}</p>
+            ) : null}
             <div className="flex gap-2">
               <Button onClick={saveProfile} disabled={isPending}>
                 {isPending ? tCommon("loading") : tCommon("save")}

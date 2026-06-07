@@ -1,5 +1,5 @@
 import { AuthGate } from "@/components/auth/auth-gate";
-import { getCurrentUserProfile, syncUserProfileFromClerk } from "@/lib/auth";
+import { resolveUserProfile } from "@/modules/auth/server/session";
 import { redirect } from "next/navigation";
 
 export default async function OnboardingLayout({
@@ -7,8 +7,7 @@ export default async function OnboardingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const profile =
-    (await getCurrentUserProfile()) ?? (await syncUserProfileFromClerk());
+  const profile = await resolveUserProfile();
 
   if (profile?.onboardingCompleted) {
     redirect("/today");

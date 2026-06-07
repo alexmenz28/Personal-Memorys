@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProfileLocaleFields } from "@/components/profile/profile-locale-fields";
 import { ThemeSelector } from "@/components/settings/theme-selector";
-import { updateProfileSettings } from "@/lib/actions/profile";
-import type { ThemePreference } from "@/lib/theme";
-import type { UpdateProfileInput } from "@/lib/validations/profile";
+import { updateProfileSettings } from "@/modules/profile/actions/profile.actions";
+import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
+import type { ThemePreference } from "@/shared/lib/theme";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -25,12 +25,20 @@ export function SettingsForm({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState(initialValues);
+  const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
     startTransition(async () => {
-      await updateProfileSettings(form);
+      const result = await updateProfileSettings(form);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
       router.refresh();
     });
   }
@@ -63,6 +71,9 @@ export function SettingsForm({
               }}
             />
 
+            {error ? (
+              <p className="text-sm text-destructive">{error}</p>
+            ) : null}
             <Button type="submit" disabled={isPending}>
               {isPending ? tCommon("loading") : tCommon("save")}
             </Button>

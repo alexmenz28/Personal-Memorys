@@ -5,8 +5,8 @@ import {
   getTimezonesForCountry,
   resolveTimezoneForCountry,
   supportedCountries,
-} from "@/lib/constants/locales-data";
-import type { UpdateProfileInput } from "@/lib/validations/profile";
+} from "@/modules/profile/constants/locales-data";
+import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
 import { useEffect, useRef } from "react";
 
 type ProfileLocaleFieldsProps = {

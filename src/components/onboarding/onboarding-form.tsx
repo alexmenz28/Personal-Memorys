@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProfileLocaleFields } from "@/components/profile/profile-locale-fields";
-import { completeOnboarding } from "@/lib/actions/profile";
-import type { UpdateProfileInput } from "@/lib/validations/profile";
+import { completeOnboarding } from "@/modules/profile/actions/profile.actions";
+import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -18,12 +18,20 @@ export function OnboardingForm({ initialValues }: OnboardingFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [form, setForm] = useState(initialValues);
+  const [error, setError] = useState<string | null>(null);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError(null);
 
     startTransition(async () => {
-      await completeOnboarding(form);
+      const result = await completeOnboarding(form);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
       router.push("/today");
       router.refresh();
     });
@@ -45,6 +53,9 @@ export function OnboardingForm({ initialValues }: OnboardingFormProps) {
             }}
           />
 
+          {error ? (
+            <p className="text-sm text-destructive">{error}</p>
+          ) : null}
           <Button className="w-full" type="submit" disabled={isPending}>
             {isPending ? "..." : t("continue")}
           </Button>

@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { NextIntlClientProvider } from "next-intl";
 import { useState } from "react";
-import type { ThemePreference } from "@/lib/theme";
+import type { ThemePreference } from "@/shared/lib/theme";
 
 type AppProvidersProps = {
   children: React.ReactNode;

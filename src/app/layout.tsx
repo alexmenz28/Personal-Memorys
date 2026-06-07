@@ -1,19 +1,15 @@
 import { AppProviders } from "@/components/providers/app-providers";
-import { getCurrentUserProfile } from "@/lib/auth";
-import type { ThemePreference } from "@/lib/theme";
+import { getCurrentUserProfile } from "@/modules/auth/server/session";
+import type { ThemePreference } from "@/shared/lib/theme";
 import type { Metadata } from "next";
 import { getLocale, getMessages } from "next-intl/server";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plusJakarta = Plus_Jakarta_Sans({
+  variable: "--font-sans",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -37,9 +33,9 @@ export default async function RootLayout({
     <html
       lang={locale}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${plusJakarta.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200">
+      <body className="min-h-full flex flex-col bg-background font-sans text-foreground transition-colors duration-200">
         <AppProviders
           locale={locale}
           messages={messages}

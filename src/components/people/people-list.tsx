@@ -2,7 +2,6 @@
 
 import { CreatePersonDialog } from "@/components/people/create-person-dialog";
 import { PersonCard } from "@/components/people/person-card";
-import { StaggerItem, StaggerList } from "@/components/motion/fade-in";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -20,9 +19,10 @@ type PersonListItem = {
 
 type PeopleListProps = {
   people: PersonListItem[];
+  onSelectPerson?: (personId: string, personName: string) => void;
 };
 
-export function PeopleList({ people }: PeopleListProps) {
+export function PeopleList({ people, onSelectPerson }: PeopleListProps) {
   const t = useTranslations("people");
 
   if (people.length === 0) {
@@ -43,21 +43,19 @@ export function PeopleList({ people }: PeopleListProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <StaggerList className="grid gap-3">
-        {people.map((person) => (
-          <StaggerItem key={person.id}>
-            <PersonCard
-              id={person.id}
-              name={person.name}
-              relationship={person.relationship}
-              notes={person.notes}
-              preferencesCount={person._count.preferences}
-              notesCount={person._count.personNotes}
-            />
-          </StaggerItem>
-        ))}
-      </StaggerList>
+    <div className="grid gap-3">
+      {people.map((person) => (
+        <PersonCard
+          key={person.id}
+          id={person.id}
+          name={person.name}
+          relationship={person.relationship}
+          notes={person.notes}
+          preferencesCount={person._count.preferences}
+          notesCount={person._count.personNotes}
+          onSelect={onSelectPerson}
+        />
+      ))}
     </div>
   );
 }
