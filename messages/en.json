@@ -1,0 +1,106 @@
+{
+  "common": {
+    "appName": "Personal Memories",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "comingSoon": "Coming soon"
+  },
+  "nav": {
+    "today": "Today",
+    "upcoming": "Upcoming",
+    "people": "People",
+    "undated": "Undated",
+    "settings": "Settings"
+  },
+  "landing": {
+    "title": "Remember what matters",
+    "subtitle": "Track important dates, people, and the context you need when the moment arrives — favorite places, gift ideas, and personal notes.",
+    "getStarted": "Get started",
+    "signIn": "Sign in"
+  },
+  "today": {
+    "title": "Today",
+    "empty": "Nothing scheduled for today.",
+    "holidays": "Holidays",
+    "events": "Your events"
+  },
+  "upcoming": {
+    "title": "Upcoming",
+    "subtitle": "Next 30 days",
+    "empty": "No upcoming events in the next 30 days."
+  },
+  "people": {
+    "title": "People",
+    "subtitle": "Family, partners, friends — with their preferences and notes.",
+    "empty": "Add someone important to start building context for their special moments.",
+    "emptyTitle": "No people yet",
+    "addPerson": "Add person",
+    "addPersonDescription": "Save someone important and keep their preferences close.",
+    "name": "Name",
+    "namePlaceholder": "Alejandra",
+    "relationship": "Relationship",
+    "generalNotes": "General notes",
+    "notesPlaceholder": "Things you always want to remember...",
+    "counts": "{preferences} preferences · {notes} notes",
+    "backToPeople": "Back to people",
+    "detailSubtitle": "Preferences, notes, and context for special moments.",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "preferenceCategory": "Category",
+    "preferenceLabel": "Label",
+    "preferenceLabelPlaceholder": "Favorite restaurant",
+    "preferenceValue": "Value",
+    "preferenceValuePlaceholder": "La Taqueria on Main St",
+    "addPreference": "Add preference",
+    "noPreferences": "No preferences yet.",
+    "notes": "Notes",
+    "addNote": "Add note",
+    "notePlaceholder": "She loved the dinner we had last anniversary...",
+    "noNotes": "No notes yet.",
+    "deletePerson": "Delete",
+    "deleteConfirm": "Delete this person and all related data?",
+    "relationships": {
+      "PARTNER": "Partner",
+      "FAMILY": "Family",
+      "FRIEND": "Friend",
+      "COLLEAGUE": "Colleague",
+      "OTHER": "Other"
+    },
+    "categories": {
+      "FOOD": "Food",
+      "RESTAURANT": "Restaurant",
+      "GIFT": "Gift",
+      "PLACE": "Place",
+      "OTHER": "Other"
+    }
+  },
+  "undated": {
+    "title": "Undated",
+    "subtitle": "Ideas waiting for a date.",
+    "empty": "No undated events yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language",
+    "timezone": "Timezone",
+    "timezoneHint": "Suggested automatically from your country. You can change it if needed.",
+    "country": "Country",
+    "account": "Account",
+    "exportData": "Export data",
+    "deleteAccount": "Delete account"
+  },
+  "onboarding": {
+    "title": "Set up your account",
+    "subtitle": "We'll use this to show the right holidays and send reminders at the right time.",
+    "country": "Country",
+    "timezone": "Timezone",
+    "language": "Language",
+    "timezoneHint": "Suggested automatically from your country. You can change it if needed.",
+    "continue": "Continue"
+  }
+}

@@ -1,0 +1,106 @@
+{
+  "common": {
+    "appName": "Memorias Personales",
+    "loading": "Cargando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "comingSoon": "Próximamente"
+  },
+  "nav": {
+    "today": "Hoy",
+    "upcoming": "Próximos",
+    "people": "Personas",
+    "undated": "Sin fecha",
+    "settings": "Ajustes"
+  },
+  "landing": {
+    "title": "Recuerda lo que importa",
+    "subtitle": "Lleva el control de fechas importantes, personas y el contexto que necesitas cuando llega el momento — lugares favoritos, ideas de regalo y notas personales.",
+    "getStarted": "Comenzar",
+    "signIn": "Iniciar sesión"
+  },
+  "today": {
+    "title": "Hoy",
+    "empty": "Nada programado para hoy.",
+    "holidays": "Festividades",
+    "events": "Tus eventos"
+  },
+  "upcoming": {
+    "title": "Próximos",
+    "subtitle": "Próximos 30 días",
+    "empty": "No hay eventos en los próximos 30 días."
+  },
+  "people": {
+    "title": "Personas",
+    "subtitle": "Familia, pareja, amigos — con sus gustos y notas.",
+    "empty": "Agrega a alguien importante para empezar a guardar contexto de sus momentos especiales.",
+    "emptyTitle": "Aún no hay personas",
+    "addPerson": "Agregar persona",
+    "addPersonDescription": "Guarda a alguien importante y mantén sus preferencias a mano.",
+    "name": "Nombre",
+    "namePlaceholder": "Alejandra",
+    "relationship": "Relación",
+    "generalNotes": "Notas generales",
+    "notesPlaceholder": "Cosas que siempre quieres recordar...",
+    "counts": "{preferences} preferencias · {notes} notas",
+    "backToPeople": "Volver a personas",
+    "detailSubtitle": "Preferencias, notas y contexto para momentos especiales.",
+    "profile": "Perfil",
+    "preferences": "Preferencias",
+    "preferenceCategory": "Categoría",
+    "preferenceLabel": "Etiqueta",
+    "preferenceLabelPlaceholder": "Restaurante favorito",
+    "preferenceValue": "Valor",
+    "preferenceValuePlaceholder": "La Taqueria en la calle principal",
+    "addPreference": "Agregar preferencia",
+    "noPreferences": "Aún no hay preferencias.",
+    "notes": "Notas",
+    "addNote": "Agregar nota",
+    "notePlaceholder": "Le encantó la cena del último aniversario...",
+    "noNotes": "Aún no hay notas.",
+    "deletePerson": "Eliminar",
+    "deleteConfirm": "¿Eliminar esta persona y todos sus datos relacionados?",
+    "relationships": {
+      "PARTNER": "Pareja",
+      "FAMILY": "Familia",
+      "FRIEND": "Amigo/a",
+      "COLLEAGUE": "Colega",
+      "OTHER": "Otro"
+    },
+    "categories": {
+      "FOOD": "Comida",
+      "RESTAURANT": "Restaurante",
+      "GIFT": "Regalo",
+      "PLACE": "Lugar",
+      "OTHER": "Otro"
+    }
+  },
+  "undated": {
+    "title": "Sin fecha",
+    "subtitle": "Ideas esperando una fecha.",
+    "empty": "No hay eventos sin fecha."
+  },
+  "settings": {
+    "title": "Ajustes",
+    "appearance": "Apariencia",
+    "themeLight": "Claro",
+    "themeDark": "Oscuro",
+    "themeSystem": "Sistema",
+    "language": "Idioma",
+    "timezone": "Zona horaria",
+    "timezoneHint": "Se sugiere automáticamente según tu país. Puedes cambiarla si lo necesitas.",
+    "country": "País",
+    "account": "Cuenta",
+    "exportData": "Exportar datos",
+    "deleteAccount": "Eliminar cuenta"
+  },
+  "onboarding": {
+    "title": "Configura tu cuenta",
+    "subtitle": "Usaremos esto para mostrar las festividades correctas y enviar recordatorios a la hora adecuada.",
+    "country": "País",
+    "timezone": "Zona horaria",
+    "language": "Idioma",
+    "timezoneHint": "Se sugiere automáticamente según tu país. Puedes cambiarla si lo necesitas.",
+    "continue": "Continuar"
+  }
+}
