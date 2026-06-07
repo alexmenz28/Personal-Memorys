@@ -19,6 +19,11 @@ export function coerceToDate(value: Date | string) {
   return value instanceof Date ? value : new Date(value);
 }
 
+/** Normalizes Date or ISO string (e.g. from unstable_cache) to ISO string. */
+export function toIsoString(value: Date | string) {
+  return typeof value === "string" ? value : value.toISOString();
+}
+
 export function formatDateForDisplay(
   date: Date | string,
   locale: string,

@@ -59,3 +59,39 @@ Form → actions → service → revalidatePath
 ## Page chrome
 
 Pages use `<AppPage title subtitle action>` to set the header without re-mounting the shell.
+
+## Overlay patterns (panel / modal / inline)
+
+Three patterns, chosen by intent — not one-size-fits-all.
+
+| Pattern | Component | When to use | Examples |
+|---------|-----------|-------------|----------|
+| **Slide panel** | `SlidePanel` | Explore or edit with **context visible** behind (list, calendar). Longer content, vertical scroll. | Person detail (desktop), calendar day detail, edit event |
+| **Modal** | `Dialog` | Short **transactional** flows and destructive confirmations. Interrupt, complete, dismiss. | Create person, create event (global button), confirm delete |
+| **Inline** | Form inside an open panel | Add items **within** a detail view already open. | Preferences, notes in person detail |
+
+### Rules
+
+1. **Panel** → inspect / detail / edit with context (keep the page behind).
+2. **Modal** → quick create or confirm (few fields, no prior selection).
+3. **Inline** → nested adds inside an open detail.
+
+### Event flows
+
+| Entry point | UI |
+|-------------|-----|
+| Header “Add event” (Today / Upcoming / Undated) | **Modal** (`CreateEventDialog`) |
+| Calendar day → click user event | **Panel** (`EventSlidePanel` edit) |
+| Undated list → click event | **Panel** (edit) |
+| Person detail → “Add event” | **Panel** (create, person pre-selected; may stack over person panel on desktop) |
+| Delete event / delete person | **Modal** (`ConfirmDialog`) |
+
+### Mobile
+
+- Person detail: full-screen view (not slide panel); `PersonSlidePanel` uses `desktopOnly`.
+- Calendar day detail and event edit: `SlidePanel` full width (no `desktopOnly`).
+- Quick creates stay as modals on all breakpoints.
+
+### Shared primitive
+
+`src/shared/components/layout/slide-panel.tsx` — framer-motion slide from the right, backdrop, body scroll lock. Optional `desktopOnly` for people; optional `stacked` when a second panel opens over an existing one.

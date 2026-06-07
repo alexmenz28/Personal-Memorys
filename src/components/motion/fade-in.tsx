@@ -1,6 +1,13 @@
 "use client";
 
-import { motion, type HTMLMotionProps } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  type HTMLMotionProps,
+} from "framer-motion";
+
+const fadeEase = [0.22, 1, 0.36, 1] as const;
 
 const fadeInVariants = {
   hidden: { opacity: 0, y: 8 },
@@ -44,6 +51,38 @@ export function StaggerList({
     >
       {children}
     </motion.div>
+  );
+}
+
+type FadePresenceProps = {
+  presenceKey: string;
+  children: React.ReactNode;
+  className?: string;
+};
+
+export function FadePresence({
+  presenceKey,
+  children,
+  className,
+}: FadePresenceProps) {
+  const reduceMotion = useReducedMotion();
+  const transition = reduceMotion
+    ? { duration: 0 }
+    : { duration: 0.22, ease: fadeEase };
+
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={presenceKey}
+        className={className}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 8 }}
+        transition={transition}
+      >
+        {children}
+      </motion.div>
+    </AnimatePresence>
   );
 }
 

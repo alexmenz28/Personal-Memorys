@@ -87,10 +87,10 @@ export async function deletePerson(personId: string) {
 export async function createPreference(input: unknown) {
   return runAction(async () => {
     const data = createPreferenceSchema.parse(input);
-    await requireOwnedPerson(data.personId);
-
+    const { profile } = await requireOwnedPerson(data.personId);
     const preference = await peopleRepository.createPreference(data);
-    revalidatePersonCache(data.personId);
+    invalidatePersonData(data.personId, profile.id);
+    revalidatePath("/people");
     revalidatePath(`/people/${data.personId}`);
     return preference;
   });
@@ -98,9 +98,10 @@ export async function createPreference(input: unknown) {
 
 export async function deletePreference(preferenceId: string, personId: string) {
   return runAction(async () => {
-    await requireOwnedPerson(personId);
+    const { profile } = await requireOwnedPerson(personId);
     await peopleRepository.deletePreference(preferenceId, personId);
-    revalidatePersonCache(personId);
+    invalidatePersonData(personId, profile.id);
+    revalidatePath("/people");
     revalidatePath(`/people/${personId}`);
   });
 }
@@ -108,10 +109,10 @@ export async function deletePreference(preferenceId: string, personId: string) {
 export async function createPersonNote(input: unknown) {
   return runAction(async () => {
     const data = createPersonNoteSchema.parse(input);
-    await requireOwnedPerson(data.personId);
-
+    const { profile } = await requireOwnedPerson(data.personId);
     const note = await peopleRepository.createNote(data);
-    revalidatePersonCache(data.personId);
+    invalidatePersonData(data.personId, profile.id);
+    revalidatePath("/people");
     revalidatePath(`/people/${data.personId}`);
     return note;
   });
@@ -119,9 +120,10 @@ export async function createPersonNote(input: unknown) {
 
 export async function deletePersonNote(noteId: string, personId: string) {
   return runAction(async () => {
-    await requireOwnedPerson(personId);
+    const { profile } = await requireOwnedPerson(personId);
     await peopleRepository.deleteNote(noteId, personId);
-    revalidatePersonCache(personId);
+    invalidatePersonData(personId, profile.id);
+    revalidatePath("/people");
     revalidatePath(`/people/${personId}`);
   });
 }

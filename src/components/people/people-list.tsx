@@ -17,12 +17,24 @@ type PersonListItem = {
   };
 };
 
+type CreatedPerson = {
+  id: string;
+  name: string;
+  relationship: string;
+  notes: string | null;
+};
+
 type PeopleListProps = {
   people: PersonListItem[];
   onSelectPerson?: (personId: string, personName: string) => void;
+  onPersonCreated?: (person: CreatedPerson) => void;
 };
 
-export function PeopleList({ people, onSelectPerson }: PeopleListProps) {
+export function PeopleList({
+  people,
+  onSelectPerson,
+  onPersonCreated,
+}: PeopleListProps) {
   const t = useTranslations("people");
 
   if (people.length === 0) {
@@ -36,7 +48,7 @@ export function PeopleList({ people, onSelectPerson }: PeopleListProps) {
             <p className="font-medium">{t("emptyTitle")}</p>
             <p className="max-w-sm text-sm text-muted-foreground">{t("empty")}</p>
           </div>
-          <CreatePersonDialog />
+          <CreatePersonDialog onCreated={onPersonCreated} />
         </CardContent>
       </Card>
     );

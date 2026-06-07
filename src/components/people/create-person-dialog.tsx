@@ -21,8 +21,15 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
+type CreatedPerson = {
+  id: string;
+  name: string;
+  relationship: string;
+  notes: string | null;
+};
+
 type CreatePersonDialogProps = {
-  onCreated?: (personId: string, personName: string) => void;
+  onCreated?: (person: CreatedPerson) => void;
 };
 
 export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
@@ -63,12 +70,16 @@ export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
       resetForm();
 
       if (onCreated) {
-        onCreated(result.data.id, result.data.name);
+        onCreated({
+          id: result.data.id,
+          name: result.data.name,
+          relationship: result.data.relationship,
+          notes: result.data.notes,
+        });
       } else {
         router.push(`/people?person=${result.data.id}`);
+        router.refresh();
       }
-
-      router.refresh();
     });
   }
 

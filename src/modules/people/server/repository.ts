@@ -43,6 +43,12 @@ export const peopleRepository = {
     });
   },
 
+  countOwned(personIds: string[], userProfileId: string) {
+    return db.person.count({
+      where: { id: { in: personIds }, userProfileId },
+    });
+  },
+
   create(userProfileId: string, data: CreatePersonInput) {
     return db.person.create({
       data: {

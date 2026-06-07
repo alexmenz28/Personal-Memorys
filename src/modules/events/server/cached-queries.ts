@@ -16,6 +16,14 @@ export function getCachedEventsForDateRange(
   )();
 }
 
+export function getCachedAllDatedEvents(userProfileId: string) {
+  return unstable_cache(
+    async () => eventsRepository.findAllDated(userProfileId),
+    ["events-all-dated", userProfileId],
+    { revalidate: 30, tags: [`events-${userProfileId}`] },
+  )();
+}
+
 export function getCachedUndatedEvents(userProfileId: string) {
   return unstable_cache(
     async () => eventsRepository.findUndated(userProfileId),

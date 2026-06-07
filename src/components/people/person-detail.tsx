@@ -1,9 +1,10 @@
 "use client";
 
+import { FilterableItemsList } from "@/components/people/filterable-items-list";
 import { RelationshipBadge } from "@/components/people/relationship-badge";
-import { FadeIn } from "@/components/motion/fade-in";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,11 +21,11 @@ import {
   preferenceCategories,
   relationshipTypes,
 } from "@/modules/people/schemas/person.schema";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 type Preference = {
   id: string;
@@ -50,6 +51,8 @@ type PersonDetailProps = {
   variant?: "page" | "panel";
   onBack?: () => void;
   onDeleted?: () => void;
+  onPersonUpdated?: (person: PersonDetailProps["person"]) => void;
+  onCreateEvent?: (personId: string) => void;
 };
 
 export function PersonDetail({
@@ -57,8 +60,11 @@ export function PersonDetail({
   variant = "page",
   onBack,
   onDeleted,
+  onPersonUpdated,
+  onCreateEvent,
 }: PersonDetailProps) {
   const t = useTranslations("people");
+  const tEvents = useTranslations("events");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -71,6 +77,32 @@ export function PersonDetail({
   const [prefValue, setPrefValue] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [preferences, setPreferences] = useState(person.preferences);
+  const [personNotes, setPersonNotes] = useState(person.personNotes);
+
+  useEffect(() => {
+    setName(person.name);
+    setRelationship(person.relationship);
+    setNotes(person.notes ?? "");
+    setPreferences(person.preferences);
+    setPersonNotes(person.personNotes);
+  }, [person]);
+
+  function notifyPersonUpdated(
+    nextPreferences: Preference[],
+    nextNotes: PersonNote[],
+    nextName = name,
+  ) {
+    onPersonUpdated?.({
+      ...person,
+      name: nextName,
+      relationship,
+      notes: notes || null,
+      preferences: nextPreferences,
+      personNotes: nextNotes,
+    });
+  }
 
   const initials = person.name
     .split(" ")
@@ -93,17 +125,21 @@ export function PersonDetail({
         return;
       }
 
+      notifyPersonUpdated(preferences, personNotes, name);
       router.refresh();
     });
   }
 
   function handleDeletePerson() {
-    if (!confirm(t("deleteConfirm"))) {
-      return;
-    }
-
     startTransition(async () => {
-      await deletePerson(person.id);
+      const result = await deletePerson(person.id);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      setDeleteDialogOpen(false);
 
       if (onDeleted) {
         onDeleted();
@@ -121,15 +157,23 @@ export function PersonDetail({
     }
 
     startTransition(async () => {
-      await createPreference({
+      const result = await createPreference({
         personId: person.id,
         category: prefCategory,
         label: prefLabel,
         value: prefValue,
       });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      const nextPreferences = [result.data, ...preferences];
+      setPreferences(nextPreferences);
       setPrefLabel("");
       setPrefValue("");
-      router.refresh();
+      notifyPersonUpdated(nextPreferences, personNotes);
     });
   }
 
@@ -139,12 +183,52 @@ export function PersonDetail({
     }
 
     startTransition(async () => {
-      await createPersonNote({
+      const result = await createPersonNote({
         personId: person.id,
         content: noteContent,
       });
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      const nextNotes = [result.data, ...personNotes];
+      setPersonNotes(nextNotes);
       setNoteContent("");
-      router.refresh();
+      notifyPersonUpdated(preferences, nextNotes);
+    });
+  }
+
+  function removePreference(preferenceId: string) {
+    startTransition(async () => {
+      const result = await deletePreference(preferenceId, person.id);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      const nextPreferences = preferences.filter(
+        (preference) => preference.id !== preferenceId,
+      );
+      setPreferences(nextPreferences);
+      notifyPersonUpdated(nextPreferences, personNotes);
+    });
+  }
+
+  function removeNote(noteId: string) {
+    startTransition(async () => {
+      const result = await deletePersonNote(noteId, person.id);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      const nextNotes = personNotes.filter((note) => note.id !== noteId);
+      setPersonNotes(nextNotes);
+      notifyPersonUpdated(preferences, nextNotes);
     });
   }
 
@@ -194,7 +278,18 @@ export function PersonDetail({
         )
       ) : null}
 
-      {isPanel ? profileCard : <FadeIn>{profileCard}</FadeIn>}
+      {profileCard}
+
+      {onCreateEvent ? (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onCreateEvent(person.id)}
+        >
+          <CalendarPlus className="size-4" />
+          {tEvents("addEventForPerson")}
+        </Button>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card className="border-border/60">
@@ -243,7 +338,7 @@ export function PersonDetail({
               </Button>
               <Button
                 variant="destructive"
-                onClick={handleDeletePerson}
+                onClick={() => setDeleteDialogOpen(true)}
                 disabled={isPending}
               >
                 <Trash2 className="size-4" />
@@ -301,42 +396,62 @@ export function PersonDetail({
             >
               {t("addPreference")}
             </Button>
-            <div className="space-y-2">
-              {person.preferences.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("noPreferences")}
-                </p>
-              ) : (
-                person.preferences.map((preference) => (
-                  <div
-                    key={preference.id}
-                    className="flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
-                  >
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {t(`categories.${preference.category}`)}
-                      </p>
-                      <p className="font-medium">{preference.label}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {preference.value}
-                      </p>
-                    </div>
+            <FilterableItemsList
+              items={preferences}
+              emptyMessage={t("noPreferences")}
+              noResultsMessage={t("noFilterResults")}
+              viewAllLabel={(count) => t("viewAllPreferences", { count })}
+              viewLessLabel={t("viewLess")}
+              searchPlaceholder={t("searchPreferences")}
+              getSearchText={(preference) =>
+                `${preference.label} ${preference.value}`
+              }
+              categoryFilter={{
+                getCategory: (preference) => preference.category,
+                allLabel: t("filterAll"),
+                categories: preferenceCategories.map((category) => ({
+                  value: category,
+                  label: t(`categories.${category}`),
+                })),
+              }}
+              filteredCountLabel={(count, total) =>
+                t("filteredCount", { count, total })
+              }
+              renderItem={(preference, context) => (
+                <div
+                  className={
+                    context === "preview"
+                      ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
+                      : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
+                  }
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {t(`categories.${preference.category}`)}
+                    </p>
+                    <p className="truncate font-medium">{preference.label}</p>
+                    <p
+                      className={
+                        context === "preview"
+                          ? "truncate text-sm text-muted-foreground"
+                          : "text-sm text-muted-foreground"
+                      }
+                    >
+                      {preference.value}
+                    </p>
+                  </div>
+                  {context === "full" ? (
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      onClick={() =>
-                        startTransition(async () => {
-                          await deletePreference(preference.id, person.id);
-                          router.refresh();
-                        })
-                      }
+                      onClick={() => removePreference(preference.id)}
                     >
                       <Trash2 className="size-4" />
                     </Button>
-                  </div>
-                ))
+                  ) : null}
+                </div>
               )}
-            </div>
+            />
           </CardContent>
         </Card>
       </div>
@@ -363,34 +478,60 @@ export function PersonDetail({
           >
             {t("addNote")}
           </Button>
-          <div className="space-y-2">
-            {person.personNotes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t("noNotes")}</p>
-            ) : (
-              person.personNotes.map((note) => (
-                <div
-                  key={note.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
+          <FilterableItemsList
+            items={personNotes}
+            emptyMessage={t("noNotes")}
+            noResultsMessage={t("noFilterResults")}
+            viewAllLabel={(count) => t("viewAllNotes", { count })}
+            viewLessLabel={t("viewLess")}
+            searchPlaceholder={t("searchNotes")}
+            getSearchText={(note) => note.content}
+            filteredCountLabel={(count, total) =>
+              t("filteredCount", { count, total })
+            }
+            renderItem={(note, context) => (
+              <div
+                className={
+                  context === "preview"
+                    ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
+                    : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
+                }
+              >
+                <p
+                  className={
+                    context === "preview"
+                      ? "line-clamp-3 text-sm leading-relaxed"
+                      : "text-sm leading-relaxed"
+                  }
                 >
-                  <p className="text-sm leading-relaxed">{note.content}</p>
+                  {note.content}
+                </p>
+                {context === "full" ? (
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    onClick={() =>
-                      startTransition(async () => {
-                        await deletePersonNote(note.id, person.id);
-                        router.refresh();
-                      })
-                    }
+                    onClick={() => removeNote(note.id)}
                   >
                     <Trash2 className="size-4" />
                   </Button>
-                </div>
-              ))
+                ) : null}
+              </div>
             )}
-          </div>
+          />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title={t("deleteConfirmTitle", { name })}
+        description={t("deleteConfirmDescription", { name })}
+        confirmLabel={t("deletePerson")}
+        cancelLabel={tCommon("cancel")}
+        onConfirm={handleDeletePerson}
+        isPending={isPending}
+        destructive
+      />
     </div>
   );
 }

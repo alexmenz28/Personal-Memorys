@@ -6,55 +6,65 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  EventForm,
+  type EventFormValues,
+} from "@/modules/events/components/event-form";
+import type { PersonOption } from "@/modules/events/components/event-person-picker";
 import { createEvent } from "@/modules/events/actions/events.actions";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-type CreateEventDialogProps = {
-  defaultDate?: string;
+type CreatedEvent = {
+  id: string;
+  title: string;
+  description: string | null;
+  date: Date | null;
+  isUndated: boolean;
+  isRecurring: boolean;
+  eventPeople: Array<{ person: { id: string; name: string } }>;
 };
 
-export function CreateEventDialog({ defaultDate }: CreateEventDialogProps) {
+type CreateEventDialogProps = {
+  defaultDate?: string;
+  defaultUndated?: boolean;
+  people?: PersonOption[];
+  defaultPersonIds?: string[];
+  onCreated?: (event: CreatedEvent) => void;
+};
+
+export function CreateEventDialog({
+  defaultDate,
+  defaultUndated = false,
+  people = [],
+  defaultPersonIds = [],
+  onCreated,
+}: CreateEventDialogProps) {
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState(defaultDate ?? "");
-  const [isUndated, setIsUndated] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
-  function resetForm() {
-    setTitle("");
-    setDescription("");
-    setDate(defaultDate ?? "");
-    setIsUndated(false);
-    setError(null);
-  }
-
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function handleSubmit(values: EventFormValues) {
     setError(null);
 
     startTransition(async () => {
       const result = await createEvent({
-        title,
-        description: description || undefined,
-        date: isUndated ? undefined : date || undefined,
-        isUndated,
+        title: values.title,
+        description: values.description || undefined,
+        date: values.isUndated ? undefined : values.date || undefined,
+        isUndated: values.isUndated,
         isRecurring: false,
+        personIds: values.personIds.length > 0 ? values.personIds : undefined,
       });
 
       if (!result.ok) {
@@ -63,8 +73,13 @@ export function CreateEventDialog({ defaultDate }: CreateEventDialogProps) {
       }
 
       setOpen(false);
-      resetForm();
-      router.refresh();
+      setFormKey((current) => current + 1);
+
+      if (onCreated) {
+        onCreated(result.data);
+      } else {
+        router.refresh();
+      }
     });
   }
 
@@ -83,52 +98,20 @@ export function CreateEventDialog({ defaultDate }: CreateEventDialogProps) {
           <DialogTitle>{t("addEvent")}</DialogTitle>
           <DialogDescription>{t("addEventDescription")}</DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <Label htmlFor="event-title">{t("title")}</Label>
-            <Input
-              id="event-title"
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder={t("titlePlaceholder")}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="event-description">{t("description")}</Label>
-            <Textarea
-              id="event-description"
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder={t("descriptionPlaceholder")}
-              rows={3}
-            />
-          </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={isUndated}
-              onChange={(event) => setIsUndated(event.target.checked)}
-              className="size-4 rounded border-input"
-            />
-            {t("undated")}
-          </label>
-          {!isUndated ? (
-            <div className="space-y-2">
-              <Label htmlFor="event-date">{t("date")}</Label>
-              <Input
-                id="event-date"
-                type="date"
-                value={date}
-                onChange={(event) => setDate(event.target.value)}
-                required={!isUndated}
-              />
-            </div>
-          ) : null}
-          {error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : null}
-          <DialogFooter>
+        <EventForm
+          key={formKey}
+          people={people}
+          initialValues={{
+            date: defaultDate ?? "",
+            isUndated: defaultUndated,
+            personIds: defaultPersonIds,
+          }}
+          submitLabel={isPending ? tCommon("loading") : tCommon("save")}
+          isPending={isPending}
+          error={error}
+          onSubmit={handleSubmit}
+          footerLayout="dialog"
+          footer={
             <Button
               type="button"
               variant="outline"
@@ -136,11 +119,8 @@ export function CreateEventDialog({ defaultDate }: CreateEventDialogProps) {
             >
               {tCommon("cancel")}
             </Button>
-            <Button type="submit" disabled={isPending || !title.trim()}>
-              {isPending ? tCommon("loading") : tCommon("save")}
-            </Button>
-          </DialogFooter>
-        </form>
+          }
+        />
       </DialogContent>
     </Dialog>
   );

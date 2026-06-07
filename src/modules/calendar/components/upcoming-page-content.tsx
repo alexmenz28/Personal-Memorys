@@ -1,27 +1,35 @@
-import { CreateEventDialog } from "@/modules/events/components/create-event-dialog";
-import { UpcomingView } from "@/modules/calendar/components/upcoming-view";
+import { UpcomingPageClient } from "@/modules/calendar/components/upcoming-page-client";
+import {
+  serializeEvent,
+  serializeHoliday,
+} from "@/modules/calendar/types/calendar-items";
 import { calendarService } from "@/modules/calendar/server/service";
 import { requireCurrentUserProfile } from "@/modules/auth/server/session";
-import { AppPage } from "@/shared/components/layout/page-chrome";
+import { getCachedPeopleList } from "@/modules/people/server/cached-queries";
+import { toIsoString } from "@/shared/lib/dates";
 import { getTranslations } from "next-intl/server";
 
 export async function UpcomingPageContent() {
   const t = await getTranslations("upcoming");
   const profile = await requireCurrentUserProfile();
-  const { holidays, events } = await calendarService.getUpcoming(profile);
+  const [{ holidays, events }, people] = await Promise.all([
+    calendarService.getCalendar(profile),
+    getCachedPeopleList(profile.id),
+  ]);
 
   return (
-    <AppPage
+    <UpcomingPageClient
       title={t("title")}
       subtitle={t("subtitle")}
-      action={<CreateEventDialog />}
-    >
-      <UpcomingView
-        timezone={profile.timezone}
-        locale={profile.locale}
-        holidays={holidays}
-        events={events}
-      />
-    </AppPage>
+      locale={profile.locale}
+      timezone={profile.timezone}
+      holidays={holidays.map(serializeHoliday)}
+      events={events.map(serializeEvent)}
+      people={people.map((person) => ({
+        id: person.id,
+        name: person.name,
+        createdAt: toIsoString(person.createdAt),
+      }))}
+    />
   );
 }
