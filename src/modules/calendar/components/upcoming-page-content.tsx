@@ -12,10 +12,11 @@ import { getTranslations } from "next-intl/server";
 export async function UpcomingPageContent() {
   const t = await getTranslations("upcoming");
   const profile = await requireCurrentUserProfile();
-  const [{ holidays, events }, people] = await Promise.all([
+  const [{ today, holidays, events }, people] = await Promise.all([
     calendarService.getCalendar(profile),
     getCachedPeopleList(profile.id),
   ]);
+  const currentYear = Number(today.slice(0, 4));
 
   return (
     <UpcomingPageClient
@@ -23,6 +24,10 @@ export async function UpcomingPageContent() {
       subtitle={t("subtitle")}
       locale={profile.locale}
       timezone={profile.timezone}
+      calendarRange={{
+        startDate: `${currentYear - 2}-01-01`,
+        endDate: `${currentYear + 5}-12-31`,
+      }}
       holidays={holidays.map(serializeHoliday)}
       events={events.map(serializeEvent)}
       people={people.map((person) => ({

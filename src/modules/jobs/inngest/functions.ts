@@ -1,5 +1,6 @@
 import { syncHolidaysForCountry } from "@/modules/holidays/server/sync";
 import { inngest } from "@/modules/jobs/inngest/client";
+import { processDailyReminders } from "@/modules/reminders/server/delivery.service";
 
 export const syncUserHolidays = inngest.createFunction(
   {
@@ -22,9 +23,7 @@ export const sendDailyReminders = inngest.createFunction(
     id: "send-daily-reminders",
     triggers: [{ cron: "0 8 * * *" }],
   },
-  async () => {
-    return { sent: 0 };
-  },
+  async () => processDailyReminders(),
 );
 
 export const inngestFunctions = [syncUserHolidays, sendDailyReminders];

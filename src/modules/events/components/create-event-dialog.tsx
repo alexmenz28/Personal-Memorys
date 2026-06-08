@@ -14,6 +14,7 @@ import {
   EventForm,
   type EventFormValues,
 } from "@/modules/events/components/event-form";
+import { toReminderDaysBefore } from "@/modules/events/components/event-form.helpers";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
 import { createEvent } from "@/modules/events/actions/events.actions";
 import { Plus } from "lucide-react";
@@ -63,8 +64,9 @@ export function CreateEventDialog({
         description: values.description || undefined,
         date: values.isUndated ? undefined : values.date || undefined,
         isUndated: values.isUndated,
-        isRecurring: false,
+        isRecurring: values.isRecurring,
         personIds: values.personIds.length > 0 ? values.personIds : undefined,
+        reminderDaysBefore: toReminderDaysBefore(values),
       });
 
       if (!result.ok) {
@@ -94,7 +96,7 @@ export function CreateEventDialog({
         }
       />
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("addEvent")}</DialogTitle>
           <DialogDescription>{t("addEventDescription")}</DialogDescription>
         </DialogHeader>

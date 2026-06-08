@@ -8,6 +8,7 @@ import {
   type SerializedEvent,
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
+import { matchesAnnualDate } from "@/shared/lib/recurring-events";
 import { formatDateForDisplay } from "@/shared/lib/dates";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
@@ -59,6 +60,7 @@ export function TodayViewClient({
           kind: item.kind,
           description: item.description,
           people: item.people,
+          isRecurring: item.isRecurring,
         }))}
         emptyMessage={t("empty")}
         locale={locale}
@@ -75,7 +77,15 @@ export function mergeTodayEvent(
   created: SerializedEvent,
   today: string,
 ) {
-  if (created.isUndated || created.date !== today) {
+  if (created.isUndated || !created.date) {
+    return events;
+  }
+
+  const appearsToday = created.isRecurring
+    ? matchesAnnualDate(created.date, today)
+    : created.date === today;
+
+  if (!appearsToday) {
     return events;
   }
 
@@ -83,5 +93,10 @@ export function mergeTodayEvent(
     return events;
   }
 
-  return [...events, created];
+  return [
+    ...events,
+    created.isRecurring
+      ? { ...created, occurrenceDate: today }
+      : created,
+  ];
 }

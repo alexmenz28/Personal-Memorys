@@ -94,11 +94,15 @@ export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
         }
       />
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t("addPerson")}</DialogTitle>
           <DialogDescription>{t("addPersonDescription")}</DialogDescription>
         </DialogHeader>
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form
+          className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          onSubmit={handleSubmit}
+        >
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
           <div className="space-y-2">
             <Label htmlFor="person-name">{t("name")}</Label>
             <Input
@@ -141,6 +145,7 @@ export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
           {error ? (
             <p className="text-sm text-destructive">{error}</p>
           ) : null}
+          </div>
           <DialogFooter>
             <Button
               type="button"

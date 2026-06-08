@@ -4,6 +4,9 @@
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
+    "yes": "Yes",
+    "no": "No",
+    "emptyValue": "—",
     "back": "Back",
     "comingSoon": "Coming soon"
   },
@@ -46,7 +49,8 @@
     "selectYear": "Select year",
     "goToToday": "Today",
     "closeDayDetail": "Close",
-    "dayDetailCount": "{count, plural, =0 {No activities} one {# activity} other {# activities}}"
+    "dayDetailCount": "{count, plural, =0 {No activities} one {# activity} other {# activities}}",
+    "recurring": "Annual"
   },
   "events": {
     "addEvent": "Add event",
@@ -69,7 +73,26 @@
     "deleteEvent": "Delete event",
     "deleteEventTitle": "Delete this event?",
     "deleteEventDescription": "This action cannot be undone.",
-    "addEventForPerson": "Add event"
+    "addEventForPerson": "Add event",
+    "recurring": "Annual",
+    "recurringHint": "Repeats every year on the same date (birthdays, anniversaries…).",
+    "saveConfirmTitle": "Save event changes?",
+    "saveConfirmDescription": "Review the summary before confirming.",
+    "yes": "Yes",
+    "no": "No",
+    "emptyValue": "—",
+    "reminderEmail": "Email reminder",
+    "reminderDaysBefore": "Notify in advance",
+    "reminderHint": "You'll receive an email based on your timezone in Settings.",
+    "reminderDisabled": "Disabled",
+    "reminderDays": {
+      "0": "On the day",
+      "1": "1 day before",
+      "3": "3 days before",
+      "7": "1 week before",
+      "14": "2 weeks before",
+      "30": "1 month before"
+    }
   },
   "people": {
     "title": "People",
@@ -110,6 +133,9 @@
     "deletePerson": "Delete",
     "deleteConfirmTitle": "Delete {name}?",
     "deleteConfirmDescription": "All preferences, notes, and event links will be permanently removed. This cannot be undone.",
+    "saveConfirmTitle": "Save profile changes?",
+    "saveConfirmDescription": "Review the summary before confirming.",
+    "emptyValue": "—",
     "relationships": {
       "PARTNER": "Partner",
       "FAMILY": "Family",

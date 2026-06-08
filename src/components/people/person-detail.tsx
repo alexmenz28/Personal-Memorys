@@ -21,6 +21,13 @@ import {
   preferenceCategories,
   relationshipTypes,
 } from "@/modules/people/schemas/person.schema";
+import { ChangeSummary } from "@/shared/components/ui/change-summary";
+import { FloatingFormActions } from "@/shared/components/layout/floating-form-actions";
+import { FormActions } from "@/shared/components/layout/form-actions";
+import {
+  diffPersonProfileChanges,
+  type FormChange,
+} from "@/shared/lib/form-changes";
 import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -78,8 +85,16 @@ export function PersonDetail({
   const [noteContent, setNoteContent] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
+  const [saveChanges, setSaveChanges] = useState<FormChange[]>([]);
   const [preferences, setPreferences] = useState(person.preferences);
   const [personNotes, setPersonNotes] = useState(person.personNotes);
+
+  const savedProfile = {
+    name: person.name,
+    relationship: person.relationship,
+    notes: person.notes ?? "",
+  };
 
   useEffect(() => {
     setName(person.name);
@@ -111,6 +126,31 @@ export function PersonDetail({
     .join("")
     .toUpperCase();
 
+  function buildProfileChanges() {
+    return diffPersonProfileChanges(
+      savedProfile,
+      { name, relationship, notes },
+      {
+        name: t("name"),
+        relationship: t("relationship"),
+        notes: t("generalNotes"),
+        empty: t("emptyValue"),
+        formatRelationship: (value) => t(`relationships.${value}`),
+      },
+    );
+  }
+
+  function requestSaveProfile() {
+    const changes = buildProfileChanges();
+
+    if (changes.length === 0) {
+      return;
+    }
+
+    setSaveChanges(changes);
+    setSaveConfirmOpen(true);
+  }
+
   function saveProfile() {
     setError(null);
     startTransition(async () => {
@@ -122,9 +162,11 @@ export function PersonDetail({
 
       if (!result.ok) {
         setError(result.error);
+        setSaveConfirmOpen(false);
         return;
       }
 
+      setSaveConfirmOpen(false);
       notifyPersonUpdated(preferences, personNotes, name);
       router.refresh();
     });
@@ -255,6 +297,22 @@ export function PersonDetail({
         </Card>
   );
 
+  const profileActions = (
+    <FormActions>
+      <Button
+        variant="destructive"
+        onClick={() => setDeleteDialogOpen(true)}
+        disabled={isPending}
+      >
+        <Trash2 className="size-4" />
+        {t("deletePerson")}
+      </Button>
+      <Button onClick={requestSaveProfile} disabled={isPending}>
+        {isPending ? tCommon("loading") : tCommon("save")}
+      </Button>
+    </FormActions>
+  );
+
   return (
     <div className={isPanel ? "space-y-6" : "mx-auto max-w-3xl space-y-6"}>
       {!isPanel ? (
@@ -281,14 +339,16 @@ export function PersonDetail({
       {profileCard}
 
       {onCreateEvent ? (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onCreateEvent(person.id)}
-        >
-          <CalendarPlus className="size-4" />
-          {tEvents("addEventForPerson")}
-        </Button>
+        <FormActions>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onCreateEvent(person.id)}
+          >
+            <CalendarPlus className="size-4" />
+            {tEvents("addEventForPerson")}
+          </Button>
+        </FormActions>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -332,19 +392,7 @@ export function PersonDetail({
             {error ? (
               <p className="text-sm text-destructive">{error}</p>
             ) : null}
-            <div className="flex gap-2">
-              <Button onClick={saveProfile} disabled={isPending}>
-                {isPending ? tCommon("loading") : tCommon("save")}
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => setDeleteDialogOpen(true)}
-                disabled={isPending}
-              >
-                <Trash2 className="size-4" />
-                {t("deletePerson")}
-              </Button>
-            </div>
+            {!isPanel ? profileActions : null}
           </CardContent>
         </Card>
 
@@ -389,13 +437,15 @@ export function PersonDetail({
                 />
               </div>
             </div>
-            <Button
-              variant="secondary"
-              onClick={addPreference}
-              disabled={isPending || !prefLabel.trim() || !prefValue.trim()}
-            >
-              {t("addPreference")}
-            </Button>
+            <FormActions>
+              <Button
+                variant="secondary"
+                onClick={addPreference}
+                disabled={isPending || !prefLabel.trim() || !prefValue.trim()}
+              >
+                {t("addPreference")}
+              </Button>
+            </FormActions>
             <FilterableItemsList
               items={preferences}
               emptyMessage={t("noPreferences")}
@@ -471,13 +521,15 @@ export function PersonDetail({
               rows={3}
             />
           </div>
-          <Button
-            variant="secondary"
-            onClick={addNote}
-            disabled={isPending || !noteContent.trim()}
-          >
-            {t("addNote")}
-          </Button>
+          <FormActions>
+            <Button
+              variant="secondary"
+              onClick={addNote}
+              disabled={isPending || !noteContent.trim()}
+            >
+              {t("addNote")}
+            </Button>
+          </FormActions>
           <FilterableItemsList
             items={personNotes}
             emptyMessage={t("noNotes")}
@@ -520,6 +572,23 @@ export function PersonDetail({
           />
         </CardContent>
       </Card>
+
+      {isPanel ? (
+        <FloatingFormActions>{profileActions}</FloatingFormActions>
+      ) : null}
+
+      <ConfirmDialog
+        open={saveConfirmOpen}
+        onOpenChange={setSaveConfirmOpen}
+        title={t("saveConfirmTitle")}
+        description={t("saveConfirmDescription")}
+        confirmLabel={tCommon("save")}
+        cancelLabel={tCommon("cancel")}
+        onConfirm={saveProfile}
+        isPending={isPending}
+      >
+        <ChangeSummary changes={saveChanges} />
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={deleteDialogOpen}

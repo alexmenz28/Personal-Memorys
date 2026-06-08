@@ -1,3 +1,8 @@
+import {
+  calendarItemIdForEvent,
+  expandRecurringOccurrences,
+} from "@/shared/lib/recurring-events";
+
 export type CalendarDayItem = {
   id: string;
   title: string;
@@ -5,14 +10,20 @@ export type CalendarDayItem = {
   kind: "holiday" | "event";
   description?: string | null;
   people?: string[];
+  isRecurring?: boolean;
 };
 
 export type SerializedEvent = {
   id: string;
   title: string;
   description: string | null;
+  /** Canonical stored date (anchor for recurring events). */
   date: string | null;
+  /** When set, the occurrence date to show in calendar/timeline views. */
+  occurrenceDate?: string | null;
   isUndated: boolean;
+  isRecurring: boolean;
+  reminderDaysBefore: number | null;
   eventPeople: Array<{ person: { id: string; name: string } }>;
 };
 
@@ -25,7 +36,20 @@ export type SerializedHoliday = {
 export function buildCalendarDayItems(
   holidays: SerializedHoliday[],
   events: SerializedEvent[],
+  range?: { startDate: string; endDate: string },
 ): CalendarDayItem[] {
+  const eventOccurrences = range
+    ? expandRecurringOccurrences(events, range.startDate, range.endDate)
+    : events
+        .filter(
+          (event): event is SerializedEvent & { date: string } =>
+            Boolean(event.date) && !event.isUndated,
+        )
+        .map((event) => ({
+          ...event,
+          date: event.occurrenceDate ?? event.date,
+        }));
+
   return [
     ...holidays.map((holiday) => ({
       id: `holiday-${holiday.id}`,
@@ -33,18 +57,17 @@ export function buildCalendarDayItems(
       date: holiday.date,
       kind: "holiday" as const,
     })),
-    ...events
-      .filter((event): event is SerializedEvent & { date: string } =>
-        Boolean(event.date),
-      )
-      .map((event) => ({
-        id: `event-${event.id}`,
-        title: event.title,
-        date: event.date,
-        kind: "event" as const,
-        description: event.description,
-        people: event.eventPeople.map(({ person }) => person.name),
-      })),
+    ...eventOccurrences.map((event) => ({
+      id: event.isRecurring
+        ? calendarItemIdForEvent(event.id, event.date)
+        : `event-${event.id}`,
+      title: event.title,
+      date: event.date,
+      kind: "event" as const,
+      description: event.description,
+      people: event.eventPeople.map(({ person }) => person.name),
+      isRecurring: event.isRecurring,
+    })),
   ];
 }
 
@@ -69,7 +92,14 @@ export function serializeHoliday(
 }
 
 export function parseEventIdFromItemId(itemId: string) {
-  return itemId.startsWith("event-") ? itemId.slice("event-".length) : null;
+  if (!itemId.startsWith("event-")) {
+    return null;
+  }
+
+  const body = itemId.slice("event-".length);
+  const separator = body.indexOf("--");
+
+  return separator === -1 ? body : body.slice(0, separator);
 }
 
 export function replaceCalendarEvent(
@@ -112,24 +142,32 @@ export function mergeCalendarEvent(
   });
 }
 
+function toDateOnlyString(value: Date | string) {
+  return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+}
+
 export function serializeEvent(event: {
   id: string;
   title: string;
   description: string | null;
   date: Date | string | null;
+  occurrenceDate?: Date | string | null;
   isUndated: boolean;
+  isRecurring?: boolean;
+  reminders?: Array<{ daysBefore: number }>;
   eventPeople: Array<{ person: { id: string; name: string } }>;
 }): SerializedEvent {
   return {
     id: event.id,
     title: event.title,
     description: event.description,
-    date: event.date
-      ? typeof event.date === "string"
-        ? event.date.slice(0, 10)
-        : event.date.toISOString().slice(0, 10)
+    date: event.date ? toDateOnlyString(event.date) : null,
+    occurrenceDate: event.occurrenceDate
+      ? toDateOnlyString(event.occurrenceDate)
       : null,
     isUndated: event.isUndated,
+    isRecurring: event.isRecurring ?? false,
+    reminderDaysBefore: event.reminders?.[0]?.daysBefore ?? null,
     eventPeople: event.eventPeople,
   };
 }

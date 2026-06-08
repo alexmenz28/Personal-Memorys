@@ -9,6 +9,10 @@ import {
   EventPersonPicker,
   type PersonOption,
 } from "@/modules/events/components/event-person-picker";
+import { EventReminderFields } from "@/modules/reminders/components/event-reminder-fields";
+import { FloatingFormActions } from "@/shared/components/layout/floating-form-actions";
+import { FormActions } from "@/shared/components/layout/form-actions";
+import { cn } from "@/shared/lib/utils";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
@@ -17,7 +21,10 @@ export type EventFormValues = {
   description: string;
   date: string;
   isUndated: boolean;
+  isRecurring: boolean;
   personIds: string[];
+  reminderEnabled: boolean;
+  reminderDaysBefore: number;
 };
 
 type EventFormProps = {
@@ -28,8 +35,8 @@ type EventFormProps = {
   error: string | null;
   onSubmit: (values: EventFormValues) => void;
   footer?: React.ReactNode;
-  /** Dialog modals use DialogFooter (cancel + save); panels use inline actions. */
-  footerLayout?: "dialog" | "inline";
+  /** Dialog modals use DialogFooter; panels use floating actions. */
+  footerLayout?: "dialog" | "panel";
 };
 
 const defaultValues: EventFormValues = {
@@ -37,8 +44,30 @@ const defaultValues: EventFormValues = {
   description: "",
   date: "",
   isUndated: false,
+  isRecurring: false,
   personIds: [],
+  reminderEnabled: false,
+  reminderDaysBefore: 7,
 };
+
+function resolveInitialValues(
+  initialValues?: Partial<EventFormValues>,
+): EventFormValues {
+  const reminderDaysBefore =
+    initialValues?.reminderDaysBefore ?? defaultValues.reminderDaysBefore;
+
+  return {
+    ...defaultValues,
+    ...initialValues,
+    reminderEnabled:
+      initialValues?.reminderEnabled ??
+      (initialValues?.reminderDaysBefore != null
+        ? true
+        : defaultValues.reminderEnabled),
+    reminderDaysBefore,
+    personIds: initialValues?.personIds ?? defaultValues.personIds,
+  };
+}
 
 export function EventForm({
   people,
@@ -48,97 +77,154 @@ export function EventForm({
   error,
   onSubmit,
   footer,
-  footerLayout = "inline",
+  footerLayout = "panel",
 }: EventFormProps) {
   const t = useTranslations("events");
-  const [title, setTitle] = useState(initialValues?.title ?? defaultValues.title);
-  const [description, setDescription] = useState(
-    initialValues?.description ?? defaultValues.description,
+  const resolvedInitial = resolveInitialValues(initialValues);
+  const [title, setTitle] = useState(resolvedInitial.title);
+  const [description, setDescription] = useState(resolvedInitial.description);
+  const [date, setDate] = useState(resolvedInitial.date);
+  const [isUndated, setIsUndated] = useState(resolvedInitial.isUndated);
+  const [isRecurring, setIsRecurring] = useState(resolvedInitial.isRecurring);
+  const [personIds, setPersonIds] = useState(resolvedInitial.personIds);
+  const [reminderEnabled, setReminderEnabled] = useState(
+    resolvedInitial.reminderEnabled,
   );
-  const [date, setDate] = useState(initialValues?.date ?? defaultValues.date);
-  const [isUndated, setIsUndated] = useState(
-    initialValues?.isUndated ?? defaultValues.isUndated,
-  );
-  const [personIds, setPersonIds] = useState(
-    initialValues?.personIds ?? defaultValues.personIds,
+  const [reminderDaysBefore, setReminderDaysBefore] = useState(
+    resolvedInitial.reminderDaysBefore,
   );
 
   useEffect(() => {
-    setTitle(initialValues?.title ?? defaultValues.title);
-    setDescription(initialValues?.description ?? defaultValues.description);
-    setDate(initialValues?.date ?? defaultValues.date);
-    setIsUndated(initialValues?.isUndated ?? defaultValues.isUndated);
-    setPersonIds(initialValues?.personIds ?? defaultValues.personIds);
+    const next = resolveInitialValues(initialValues);
+    setTitle(next.title);
+    setDescription(next.description);
+    setDate(next.date);
+    setIsUndated(next.isUndated);
+    setIsRecurring(next.isRecurring);
+    setPersonIds(next.personIds);
+    setReminderEnabled(next.reminderEnabled);
+    setReminderDaysBefore(next.reminderDaysBefore);
   }, [initialValues]);
+
+  function handleUndatedChange(checked: boolean) {
+    setIsUndated(checked);
+
+    if (checked) {
+      setIsRecurring(false);
+      setReminderEnabled(false);
+    }
+  }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit({ title, description, date, isUndated, personIds });
+    onSubmit({
+      title,
+      description,
+      date,
+      isUndated,
+      isRecurring,
+      personIds,
+      reminderEnabled,
+      reminderDaysBefore,
+    });
   }
 
+  const actionBar = (
+    <FormActions>
+      {footer}
+      <Button type="submit" disabled={isPending || !title.trim()}>
+        {submitLabel}
+      </Button>
+    </FormActions>
+  );
+
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
-      <div className="space-y-2">
-        <Label htmlFor="event-title">{t("title")}</Label>
-        <Input
-          id="event-title"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          placeholder={t("titlePlaceholder")}
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="event-description">{t("description")}</Label>
-        <Textarea
-          id="event-description"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          placeholder={t("descriptionPlaceholder")}
-          rows={3}
-        />
-      </div>
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={isUndated}
-          onChange={(event) => setIsUndated(event.target.checked)}
-          className="size-4 rounded border-input"
-        />
-        {t("undated")}
-      </label>
-      {!isUndated ? (
+    <form
+      className={cn(
+        footerLayout === "dialog" && "flex min-h-0 flex-1 flex-col overflow-hidden",
+      )}
+      onSubmit={handleSubmit}
+    >
+      <div
+        className={cn(
+          "space-y-4",
+          footerLayout === "dialog" && "min-h-0 flex-1 overflow-y-auto pr-1",
+        )}
+      >
         <div className="space-y-2">
-          <Label htmlFor="event-date">{t("date")}</Label>
+          <Label htmlFor="event-title">{t("title")}</Label>
           <Input
-            id="event-date"
-            type="date"
-            value={date}
-            onChange={(event) => setDate(event.target.value)}
-            required={!isUndated}
+            id="event-title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder={t("titlePlaceholder")}
+            required
           />
         </div>
-      ) : null}
-      <EventPersonPicker
-        people={people}
-        selectedIds={personIds}
-        onChange={setPersonIds}
-      />
-      {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      {footerLayout === "dialog" ? (
-        <DialogFooter>
-          {footer}
-          <Button type="submit" disabled={isPending || !title.trim()}>
-            {submitLabel}
-          </Button>
-        </DialogFooter>
-      ) : (
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={isPending || !title.trim()}>
-            {submitLabel}
-          </Button>
-          {footer}
+        <div className="space-y-2">
+          <Label htmlFor="event-description">{t("description")}</Label>
+          <Textarea
+            id="event-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            placeholder={t("descriptionPlaceholder")}
+            rows={3}
+          />
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={isUndated}
+            onChange={(event) => handleUndatedChange(event.target.checked)}
+            className="size-4 rounded border-input"
+          />
+          {t("undated")}
+        </label>
+        {!isUndated ? (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="event-date">{t("date")}</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={date}
+                onChange={(event) => setDate(event.target.value)}
+                required={!isUndated}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={isRecurring}
+                onChange={(event) => setIsRecurring(event.target.checked)}
+                className="size-4 rounded border-input"
+              />
+              {t("recurring")}
+            </label>
+            {isRecurring ? (
+              <p className="text-xs text-muted-foreground">{t("recurringHint")}</p>
+            ) : null}
+            <EventReminderFields
+              enabled={reminderEnabled}
+              daysBefore={reminderDaysBefore}
+              disabled={isPending}
+              onEnabledChange={setReminderEnabled}
+              onDaysBeforeChange={setReminderDaysBefore}
+            />
+          </>
+        ) : null}
+        <EventPersonPicker
+          people={people}
+          selectedIds={personIds}
+          onChange={setPersonIds}
+        />
+        {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      </div>
+
+      {footerLayout === "dialog" ? (
+        <DialogFooter>{actionBar}</DialogFooter>
+      ) : (
+        <FloatingFormActions>{actionBar}</FloatingFormActions>
       )}
     </form>
   );

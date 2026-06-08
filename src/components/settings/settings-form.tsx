@@ -6,6 +6,7 @@ import { ProfileLocaleFields } from "@/components/profile/profile-locale-fields"
 import { ThemeSelector } from "@/components/settings/theme-selector";
 import { updateProfileSettings } from "@/modules/profile/actions/profile.actions";
 import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
+import { FormActions } from "@/shared/components/layout/form-actions";
 import type { ThemePreference } from "@/shared/lib/theme";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -74,9 +75,11 @@ export function SettingsForm({
             {error ? (
               <p className="text-sm text-destructive">{error}</p>
             ) : null}
-            <Button type="submit" disabled={isPending}>
-              {isPending ? tCommon("loading") : tCommon("save")}
-            </Button>
+            <FormActions>
+              <Button type="submit" disabled={isPending}>
+                {isPending ? tCommon("loading") : tCommon("save")}
+              </Button>
+            </FormActions>
           </form>
         </CardContent>
       </Card>

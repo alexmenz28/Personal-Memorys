@@ -4,7 +4,7 @@ Plan por fases para completar el MVP y preparar v2. Orden sugerido según impact
 
 ---
 
-## Fase 1 — Estabilidad y UX (en curso)
+## Fase 1 — Estabilidad y UX ✅ Cerrada
 
 Objetivo: que todo lo que creas o editas se refleje al instante, sin recargar.
 
@@ -15,14 +15,14 @@ Objetivo: que todo lo que creas o editas se refleje al instante, sin recargar.
 | 1.2b | Confirmación al eliminar persona (diálogo, no `confirm()` nativo) | ✅ Hecho |
 | 1.3 | Auto-refresh optimista en Today/Upcoming al crear evento | ✅ Hecho |
 | 1.4 | Auto-refresh optimista en `/undated` + botón crear evento | ✅ Hecho |
-| 1.5 | Patrón unificado `onMutated` / optimistic UI en todos los formularios | Pendiente |
-| 1.6 | Tests manuales documentados (checklist por sección) | Pendiente |
+| 1.5 | Patrón unificado optimistic UI en eventos (crear/editar/eliminar) | ✅ Hecho |
+| 1.6 | Checklist de pruebas manuales ampliado | ✅ Hecho |
 
 **Criterio de éxito:** añadir preferencia, nota o evento → visible en < 1 s sin F5.
 
 ---
 
-## Fase 2 — Próximos con calendario
+## Fase 2 — Próximos con calendario ✅ Cerrada
 
 Objetivo: reemplazar la lista de Próximos por una **vista de calendario** (mes actual + navegación).
 
@@ -30,12 +30,10 @@ Objetivo: reemplazar la lista de Próximos por una **vista de calendario** (mes 
 |---|--------|-------|
 | 2.1 | Diseño mes grid (Lun–Dom), responsive | ✅ Hecho |
 | 2.2 | Componente `UpcomingCalendar` en `modules/calendar/` | ✅ Hecho |
-| 2.3 | Reutilizar datos de `calendarService.getUpcoming` | ✅ Hecho |
+| 2.3 | Reutilizar datos de `calendarService.getCalendar` | ✅ Hecho |
 | 2.4 | Toggle calendario ↔ lista | ✅ Hecho |
 | 2.5 | Clic en día → detalle del día en panel lateral | ✅ Hecho |
 | 2.6 | i18n días/meses según locale (`Intl`) | ✅ Hecho |
-
-**Dependencias:** Fase 1 estable (eventos se ven al crearlos).
 
 ---
 
@@ -43,7 +41,7 @@ Objetivo: reemplazar la lista de Próximos por una **vista de calendario** (mes 
 
 | # | Tarea | Estado |
 |---|--------|--------|
-| 3.1 | Eventos recurrentes (cumpleaños, aniversarios) — `isRecurring` + regla simple (anual) | Pendiente |
+| 3.1 | Eventos recurrentes anuales (`isRecurring`) | ✅ Hecho |
 | 3.2 | Página `/undated`: crear eventos sin fecha + mostrar personas vinculadas | ✅ Hecho |
 | 3.3 | Editar y eliminar eventos en **panel lateral** | ✅ Hecho |
 | 3.4 | Crear evento desde ficha de persona (**panel**, persona preseleccionada) | ✅ Hecho |
@@ -53,14 +51,14 @@ Patrón UX documentado en `docs/ARCHITECTURE.md` (panel vs modal vs inline).
 
 ---
 
-## Fase 4 — Recordatorios
+## Fase 4 — Recordatorios ✅ Cerrada
 
-| # | Tarea |
-|---|--------|
-| 4.1 | Modelo `Reminder` — días antes, canal email |
-| 4.2 | UI para configurar recordatorio al crear/editar evento |
-| 4.3 | Job Inngest diario: eventos en ventana → Resend |
-| 4.4 | Plantillas de email (en/es) |
+| # | Tarea | Estado |
+|---|--------|--------|
+| 4.1 | Modelo `Reminder` + `ReminderDelivery` (idempotencia) | ✅ Hecho |
+| 4.2 | UI recordatorio en crear/editar evento (solo con fecha) | ✅ Hecho |
+| 4.3 | Job Inngest diario → ventana por timezone → Resend | ✅ Hecho |
+| 4.4 | Plantillas de email (en/es) | ✅ Hecho |
 
 ---
 
@@ -86,7 +84,7 @@ Patrón UX documentado en `docs/ARCHITECTURE.md` (panel vs modal vs inline).
 
 ---
 
-## Checklist de pruebas manuales (Fase 1)
+## Checklist de pruebas manuales
 
 Repetir en **desktop** y **móvil** tras cada cambio relevante.
 
@@ -95,20 +93,57 @@ Repetir en **desktop** y **móvil** tras cada cambio relevante.
 - [ ] Con 4+ preferencias → solo 3 visibles + botón "Ver todas"
 - [ ] Diálogo "Ver todas" → lista completa + eliminar funciona
 - [ ] Igual para notas
-- [ ] Contador en tarjeta de lista se actualiza (ej. "3 preferencias")
+- [ ] Contador en tarjeta de lista se actualiza
+- [ ] Eliminar persona → diálogo de confirmación → desaparece de la lista
+- [ ] "Agregar evento" en ficha → panel con persona preseleccionada
 
-### Today / Upcoming
-- [ ] Crear evento → aparece en timeline sin recargar
+### Today
+- [ ] Crear evento (modal) → aparece en timeline sin recargar
 - [ ] Evento con persona vinculada → nombre visible
+- [ ] Clic en evento → panel de edición
+- [ ] Editar / eliminar evento → timeline se actualiza sin F5
+- [ ] Evento **anual** con fecha de hoy → badge "Anual" + visible cada año
+
+### Upcoming
+- [ ] Vista calendario: clic en día → panel lateral con actividades
+- [ ] Clic en evento en panel del día → editar con botón Volver
+- [ ] Crear evento (modal) → aparece en calendario/lista sin recargar
+- [ ] Evento anual → aparece en el mismo día/mes en otros años del grid
+- [ ] Toggle calendario ↔ lista coherente
 
 ### Undated
 - [ ] Crear evento sin fecha → aparece en `/undated`
+- [ ] Clic en tarjeta → panel editar
+- [ ] Asignar fecha en edición → desaparece de undated
+
+### Eventos (modal vs panel)
+- [ ] Botón global "Agregar evento" → **modal** con footer unificado
+- [ ] Checkbox "Anual" deshabilitado si "Sin fecha"
+- [ ] Buscador de personas: 3 recientes + búsqueda por nombre
+- [ ] Recordatorio por email: solo con fecha; chips de anticipación; resumen al editar
+
+### Recordatorios
+- [ ] Crear evento con recordatorio → persiste al reabrir edición
+- [ ] Evento sin fecha → sección recordatorio oculta
+- [ ] Job Inngest (o llamada manual) con Resend configurado → email en/es
+
+---
+
+## UX pendiente de unificar (antes / durante Fase 4)
+
+| # | Tarea | Estado |
+|---|--------|--------|
+| U.1 | Personas en móvil: slide panel (igual que eventos) | ✅ Hecho |
+| U.2 | Header estable al abrir panel (no cambiar título) | ✅ Hecho |
+| U.3 | `timeZone` global en next-intl (warning `ENVIRONMENT_FALLBACK`) | ✅ Hecho |
+| U.4 | Extraer `CalendarSlidePanel` / reutilizar `EventSlidePanel` en calendario | Opcional |
+| U.5 | Botón “Volver” vs X en paneles anidados (día → evento) — revisar copy i18n | Opcional |
+| U.6 | Conjuntos de acciones alineados a la derecha (`FormActions`, `DialogFooter`) | ✅ Hecho |
+| U.7 | Acciones flotantes en paneles (`FloatingFormActions`) + confirmación al guardar ediciones | ✅ Hecho |
 
 ---
 
 ## Orden recomendado para las próximas sesiones
 
-1. **Fase 1.3–1.5** — cerrar bugs de refresh en eventos y undated  
-2. **Fase 2** — calendario en Próximos (tu prioridad visual)  
-3. **Fase 3.1–3.3** — recurrentes + CRUD eventos  
-4. **Fase 4** — recordatorios por email  
+1. **Fase 5** — exportar datos y eliminar cuenta
+3. **Fase 6** — monetización y v2

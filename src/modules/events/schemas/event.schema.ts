@@ -1,34 +1,68 @@
+import { REMINDER_DAY_OPTIONS } from "@/modules/reminders/schemas/reminder.schema";
 import { z } from "zod";
 
-export const createEventSchema = z
-  .object({
-    title: z.string().min(1).max(200),
-    description: z.string().max(2000).optional(),
-    date: z.string().date().optional(),
-    isRecurring: z.boolean().default(false),
-    isUndated: z.boolean().default(false),
-    personIds: z.array(z.string()).optional(),
-  })
+const reminderDaysBeforeSchema = z
+  .number()
+  .int()
+  .refine(
+    (value) =>
+      REMINDER_DAY_OPTIONS.includes(
+        value as (typeof REMINDER_DAY_OPTIONS)[number],
+      ),
+    "Invalid reminder offset",
+  )
+  .nullable()
+  .optional();
+
+const datedEventRules = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().max(2000).optional(),
+  date: z.string().date().optional(),
+  isRecurring: z.boolean().default(false),
+  isUndated: z.boolean().default(false),
+  personIds: z.array(z.string()).optional(),
+  reminderDaysBefore: reminderDaysBeforeSchema,
+});
+
+export const createEventSchema = datedEventRules
   .refine(
     (data) => data.isUndated || Boolean(data.date),
     "Dated events require a date",
+  )
+  .refine(
+    (data) => !data.isRecurring || Boolean(data.date),
+    "Recurring events require a date",
+  )
+  .refine(
+    (data) => !data.isRecurring || !data.isUndated,
+    "Recurring events cannot be undated",
+  )
+  .refine(
+    (data) => data.isUndated ? !data.reminderDaysBefore : true,
+    "Undated events cannot have reminders",
   );
 
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 
-export const updateEventSchema = z
-  .object({
+export const updateEventSchema = datedEventRules
+  .extend({
     id: z.string().min(1),
-    title: z.string().min(1).max(200),
-    description: z.string().max(2000).optional(),
-    date: z.string().date().optional(),
-    isRecurring: z.boolean().default(false),
-    isUndated: z.boolean().default(false),
-    personIds: z.array(z.string()).optional(),
   })
   .refine(
     (data) => data.isUndated || Boolean(data.date),
     "Dated events require a date",
+  )
+  .refine(
+    (data) => !data.isRecurring || Boolean(data.date),
+    "Recurring events require a date",
+  )
+  .refine(
+    (data) => !data.isRecurring || !data.isUndated,
+    "Recurring events cannot be undated",
+  )
+  .refine(
+    (data) => data.isUndated ? !data.reminderDaysBefore : true,
+    "Undated events cannot have reminders",
   );
 
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;

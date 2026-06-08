@@ -10,7 +10,7 @@ type PersonSlidePanelProps = {
 
 export function PersonSlidePanel({ open, children, onClose }: PersonSlidePanelProps) {
   return (
-    <SlidePanel open={open} onClose={onClose} desktopOnly>
+    <SlidePanel open={open} onClose={onClose}>
       {children}
     </SlidePanel>
   );

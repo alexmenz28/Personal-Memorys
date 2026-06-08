@@ -22,6 +22,7 @@ src/
 │   ├── profile/                 # Settings, onboarding, theme
 │   ├── people/                  # CRUD, panel UI
 │   ├── events/                  # Event mutations + create dialog
+│   ├── reminders/               # Email reminders + delivery job
 │   ├── calendar/                # Today / upcoming read models
 │   ├── holidays/                # Public holiday sync + queries
 │   └── jobs/                    # Inngest
@@ -88,10 +89,55 @@ Three patterns, chosen by intent — not one-size-fits-all.
 
 ### Mobile
 
-- Person detail: full-screen view (not slide panel); `PersonSlidePanel` uses `desktopOnly`.
-- Calendar day detail and event edit: `SlidePanel` full width (no `desktopOnly`).
+- **All detail/edit overlays** use `SlidePanel` on every breakpoint (people, events, calendar day).
+- The list or calendar stays visible behind a dimmed backdrop; close with **X** or tap outside.
 - Quick creates stay as modals on all breakpoints.
+- Page header does **not** swap title when a panel opens (context stays on the current page).
 
 ### Shared primitive
 
-`src/shared/components/layout/slide-panel.tsx` — framer-motion slide from the right, backdrop, body scroll lock. Optional `desktopOnly` for people; optional `stacked` when a second panel opens over an existing one.
+`src/shared/components/layout/slide-panel.tsx` — framer-motion slide from the right, backdrop, body scroll lock. Optional `stacked` when a second panel opens over an existing one (e.g. create event from person detail).
+
+### Action buttons (mobile / one-hand use)
+
+Use `FormActions` or `DialogFooter` — both align to the **trailing edge** (right in LTR).
+
+| Rule | Rationale |
+|------|-----------|
+| Primary action **rightmost** | iOS HIG & Material: trailing = primary; easier for right-hand thumb on common phone grip |
+| Secondary / Cancel **left of primary** within the group | Standard dialog order (Cancel · Guardar) |
+| Destructive **before** primary, still in the end-aligned group | Visible but not the rightmost tap |
+| Minimum ~44×44px touch targets | Apple HIG / WCAG 2.5.5 (AAA 44px) |
+| Prefer actions at **bottom** of sheet/modal | Thumb zone (Hoober): bottom half is easier than top corners |
+| Slide panels: `FloatingFormActions` + `FormActions` | Botones flotantes al pie (sin barra), visibles al hacer scroll |
+| Editar evento / perfil | Modal de confirmación con `ChangeSummary` antes de guardar |
+
+Not a strict law: ~10% of users are left-handed; bottom placement often matters more than left vs right. We optimize for LTR + right-hand one-handed use without hiding actions at the top.
+
+### Floating actions in panels
+
+`src/shared/components/layout/floating-form-actions.tsx` — `sticky bottom-4`, solo los botones (sin barra de fondo).
+
+| Surface | Layout |
+|---------|--------|
+| `EventForm` (`footerLayout="panel"`) | Campos + `FloatingFormActions` |
+| `PersonDetail` (`variant="panel"`) | Contenido + Eliminar · Guardar flotantes |
+| Modales (`DialogContent`) | `max-h` + form `flex-col`; campos scroll, `DialogFooter` al pie |
+
+Confirmación al modificar: `diffEventFormChanges` / `diffPersonProfileChanges` → `ConfirmDialog` + `ChangeSummary`.
+
+Use `FormActions` everywhere actions appear: settings, onboarding, secondary adds (preferencias, notas), “Ver todas”, page actions.
+
+## Reminders
+
+Module: `src/modules/reminders/`
+
+| Piece | Role |
+|-------|------|
+| `EventReminderFields` | UI in event form (dated events only); preset chips for days-before |
+| `reminders/server/repository.ts` | Sync one EMAIL reminder per event; delivery log |
+| `reminders/server/delivery.service.ts` | Daily window: `today + daysBefore` in user timezone |
+| `reminders/server/email-templates.ts` | HTML templates en/es |
+| Inngest `send-daily-reminders` | Cron `0 8 * * *` UTC |
+
+Requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL`. Without them, the job skips sends (dev-safe).

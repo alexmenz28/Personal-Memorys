@@ -53,11 +53,14 @@ export function CalendarDayDetail({
               <>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium">{item.title}</p>
-                  <Badge
-                    variant={item.kind === "holiday" ? "outline" : "secondary"}
-                  >
-                    {item.kind === "holiday" ? t("holiday") : t("event")}
-                  </Badge>
+                <Badge
+                  variant={item.kind === "holiday" ? "outline" : "secondary"}
+                >
+                  {item.kind === "holiday" ? t("holiday") : t("event")}
+                </Badge>
+                {item.isRecurring ? (
+                  <Badge variant="outline">{t("recurring")}</Badge>
+                ) : null}
                 </div>
                 {item.description ? (
                   <p className="mt-1 text-sm text-muted-foreground">

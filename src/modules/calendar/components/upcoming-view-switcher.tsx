@@ -18,6 +18,7 @@ type UpcomingViewSwitcherProps = {
   holidays: SerializedHoliday[];
   events: SerializedEvent[];
   people: PersonOption[];
+  calendarRange: { startDate: string; endDate: string };
   locale: string;
   timezone: string;
   onEventUpdated?: (event: EventMutationResult) => void;
@@ -30,6 +31,7 @@ export function UpcomingViewSwitcher({
   holidays,
   events,
   people,
+  calendarRange,
   locale,
   timezone,
   onEventUpdated,
@@ -39,8 +41,8 @@ export function UpcomingViewSwitcher({
   const [view, setView] = useState<ViewMode>("calendar");
 
   const items = useMemo(
-    () => buildCalendarDayItems(holidays, events),
-    [events, holidays],
+    () => buildCalendarDayItems(holidays, events, calendarRange),
+    [calendarRange, events, holidays],
   );
 
   return (

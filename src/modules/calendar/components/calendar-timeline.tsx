@@ -15,6 +15,7 @@ export type CalendarTimelineItem = {
   kind: "holiday" | "event";
   description?: string | null;
   people?: string[];
+  isRecurring?: boolean;
 };
 
 type CalendarTimelineProps = {
@@ -62,6 +63,9 @@ export function CalendarTimeline({
                 >
                   {item.kind === "holiday" ? t("holiday") : t("event")}
                 </Badge>
+                {item.isRecurring ? (
+                  <Badge variant="outline">{t("recurring")}</Badge>
+                ) : null}
               </div>
               {item.description ? (
                 <p className="mt-1 text-sm text-muted-foreground">

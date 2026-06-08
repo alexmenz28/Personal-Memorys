@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ProfileLocaleFields } from "@/components/profile/profile-locale-fields";
 import { completeOnboarding } from "@/modules/profile/actions/profile.actions";
 import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
+import { FormActions } from "@/shared/components/layout/form-actions";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -56,9 +57,11 @@ export function OnboardingForm({ initialValues }: OnboardingFormProps) {
           {error ? (
             <p className="text-sm text-destructive">{error}</p>
           ) : null}
-          <Button className="w-full" type="submit" disabled={isPending}>
-            {isPending ? "..." : t("continue")}
-          </Button>
+          <FormActions>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "..." : t("continue")}
+            </Button>
+          </FormActions>
         </form>
       </CardContent>
     </Card>

@@ -6,6 +6,10 @@ import {
   EventForm,
   type EventFormValues,
 } from "@/modules/events/components/event-form";
+import {
+  reminderDaysFromEvent,
+  toReminderDaysBefore,
+} from "@/modules/events/components/event-form.helpers";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
 import {
   createEvent,
@@ -13,8 +17,10 @@ import {
   updateEvent,
 } from "@/modules/events/actions/events.actions";
 import type { SerializedEvent } from "@/modules/calendar/types/calendar-items";
+import { ChangeSummary } from "@/shared/components/ui/change-summary";
+import { diffEventFormChanges, type FormChange } from "@/shared/lib/form-changes";
 import { ArrowLeft, Trash2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
@@ -57,7 +63,9 @@ function toFormValues(
       description: event.description ?? "",
       date: event.date ?? "",
       isUndated: event.isUndated,
+      isRecurring: event.isRecurring,
       personIds: event.eventPeople.map(({ person }) => person.id),
+      ...reminderDaysFromEvent(event.reminderDaysBefore),
     };
   }
 
@@ -84,10 +92,14 @@ export function EventPanelContent({
 }: EventPanelContentProps) {
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
+  const formatter = useFormatter();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
+  const [pendingValues, setPendingValues] = useState<EventFormValues | null>(null);
+  const [saveChanges, setSaveChanges] = useState<FormChange[]>([]);
 
   const initialValues = useMemo(
     () =>
@@ -97,6 +109,11 @@ export function EventPanelContent({
         defaultPersonIds,
       }),
     [defaultDate, defaultPersonIds, defaultUndated, event],
+  );
+
+  const personNamesById = useMemo(
+    () => new Map(people.map((person) => [person.id, person.name])),
+    [people],
   );
 
   const title = mode === "create" ? t("addEvent") : t("editEvent");
@@ -110,42 +127,98 @@ export function EventPanelContent({
     }
   }
 
-  function handleSubmit(values: EventFormValues) {
+  function buildChangeSummary(values: EventFormValues) {
+    return diffEventFormChanges(initialValues, values, personNamesById, {
+      title: t("title"),
+      description: t("description"),
+      date: t("date"),
+      undated: t("undated"),
+      recurring: t("recurring"),
+      people: t("people"),
+      reminder: t("reminderEmail"),
+      yes: t("yes"),
+      no: t("no"),
+      empty: t("emptyValue"),
+      formatReminder: (enabled, daysBefore) =>
+        enabled ? t(`reminderDays.${daysBefore}`) : t("reminderDisabled"),
+      formatPeople: (names) =>
+        names.length > 0 ? names.join(", ") : t("emptyValue"),
+      formatDate: (dateValue, isUndated) => {
+        if (isUndated) {
+          return t("undated");
+        }
+
+        if (!dateValue) {
+          return t("emptyValue");
+        }
+
+        const parsed = new Date(`${dateValue}T12:00:00`);
+        return formatter.dateTime(parsed, {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+      },
+    });
+  }
+
+  function submitUpdate(values: EventFormValues) {
+    if (!event) {
+      return;
+    }
+
     setError(null);
 
     startTransition(async () => {
-      if (mode === "create") {
-        const result = await createEvent({
-          title: values.title,
-          description: values.description || undefined,
-          date: values.isUndated ? undefined : values.date || undefined,
-          isUndated: values.isUndated,
-          isRecurring: false,
-          personIds: values.personIds.length > 0 ? values.personIds : undefined,
-        });
-
-        if (!result.ok) {
-          setError(result.error);
-          return;
-        }
-
-        onCreated?.(result.data);
-        finishSuccess();
-        return;
-      }
-
-      if (!event) {
-        return;
-      }
-
       const result = await updateEvent({
         id: event.id,
         title: values.title,
         description: values.description || undefined,
         date: values.isUndated ? undefined : values.date || undefined,
         isUndated: values.isUndated,
-        isRecurring: false,
+        isRecurring: values.isRecurring,
         personIds: values.personIds.length > 0 ? values.personIds : undefined,
+        reminderDaysBefore: toReminderDaysBefore(values),
+      });
+
+      if (!result.ok) {
+        setError(result.error);
+        setSaveConfirmOpen(false);
+        return;
+      }
+
+      setSaveConfirmOpen(false);
+      setPendingValues(null);
+      onUpdated?.(result.data);
+      finishSuccess();
+    });
+  }
+
+  function handleSubmit(values: EventFormValues) {
+    setError(null);
+
+    if (mode === "edit") {
+      const changes = buildChangeSummary(values);
+
+      if (changes.length === 0) {
+        return;
+      }
+
+      setPendingValues(values);
+      setSaveChanges(changes);
+      setSaveConfirmOpen(true);
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await createEvent({
+        title: values.title,
+        description: values.description || undefined,
+        date: values.isUndated ? undefined : values.date || undefined,
+        isUndated: values.isUndated,
+        isRecurring: values.isRecurring,
+        personIds: values.personIds.length > 0 ? values.personIds : undefined,
+        reminderDaysBefore: toReminderDaysBefore(values),
       });
 
       if (!result.ok) {
@@ -153,9 +226,15 @@ export function EventPanelContent({
         return;
       }
 
-      onUpdated?.(result.data);
+      onCreated?.(result.data);
       finishSuccess();
     });
+  }
+
+  function handleConfirmSave() {
+    if (pendingValues) {
+      submitUpdate(pendingValues);
+    }
   }
 
   function handleDelete() {
@@ -199,6 +278,7 @@ export function EventPanelContent({
           isPending={isPending}
           error={error}
           onSubmit={handleSubmit}
+          footerLayout="panel"
           footer={
             mode === "edit" ? (
               <Button
@@ -214,6 +294,19 @@ export function EventPanelContent({
           }
         />
       </div>
+
+      <ConfirmDialog
+        open={saveConfirmOpen}
+        onOpenChange={setSaveConfirmOpen}
+        title={t("saveConfirmTitle")}
+        description={t("saveConfirmDescription")}
+        confirmLabel={tCommon("save")}
+        cancelLabel={tCommon("cancel")}
+        onConfirm={handleConfirmSave}
+        isPending={isPending}
+      >
+        <ChangeSummary changes={saveChanges} />
+      </ConfirmDialog>
 
       <ConfirmDialog
         open={deleteDialogOpen}

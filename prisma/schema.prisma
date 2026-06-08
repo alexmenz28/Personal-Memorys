@@ -199,10 +199,23 @@ model Reminder {
   createdAt  DateTime        @default(now()) @map("created_at")
   updatedAt  DateTime        @updatedAt @map("updated_at")
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event      Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  deliveries ReminderDelivery[]
 
   @@index([eventId])
   @@map("reminders")
+}
+
+model ReminderDelivery {
+  id             String   @id @default(cuid())
+  reminderId     String   @map("reminder_id")
+  occurrenceDate DateTime @db.Date @map("occurrence_date")
+  sentAt         DateTime @default(now()) @map("sent_at")
+
+  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@unique([reminderId, occurrenceDate])
+  @@map("reminder_deliveries")
 }
 
 model SystemHoliday {

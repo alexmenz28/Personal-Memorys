@@ -19,6 +19,7 @@ type UpcomingPageClientProps = {
   subtitle: string;
   locale: string;
   timezone: string;
+  calendarRange: { startDate: string; endDate: string };
   holidays: SerializedHoliday[];
   events: SerializedEvent[];
   people: PersonOption[];
@@ -29,6 +30,7 @@ export function UpcomingPageClient({
   subtitle,
   locale,
   timezone,
+  calendarRange,
   holidays: initialHolidays,
   events: initialEvents,
   people,
@@ -80,6 +82,7 @@ export function UpcomingPageClient({
         holidays={holidays}
         events={events}
         people={people}
+        calendarRange={calendarRange}
         locale={locale}
         timezone={timezone}
         onEventUpdated={handleEventUpdated}

@@ -1,6 +1,5 @@
 "use client";
 
-import { FadePresence } from "@/components/motion/fade-in";
 import { CreatePersonDialog } from "@/components/people/create-person-dialog";
 import { PeopleList } from "@/components/people/people-list";
 import { PersonDetail } from "@/components/people/person-detail";
@@ -11,7 +10,6 @@ import type { PersonOption } from "@/modules/events/components/event-person-pick
 import { toIsoString } from "@/shared/lib/dates";
 import { PersonDetailSkeleton } from "@/shared/components/layout/content-skeleton";
 import { PageActions, SetPageChrome } from "@/shared/components/layout/page-chrome";
-import { useMediaQuery } from "@/shared/hooks/use-media-query";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -60,8 +58,6 @@ export function PeopleWithPanel({
   listTitle,
   listSubtitle,
 }: PeopleWithPanelProps) {
-  const t = useTranslations("people");
-  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [people, setPeople] = useState(initialPeople);
 
   useEffect(() => {
@@ -75,9 +71,6 @@ export function PeopleWithPanel({
     initialSelectedPerson,
   );
   const [panelLoading, setPanelLoading] = useState(false);
-  const [panelTitle, setPanelTitle] = useState(
-    initialSelectedPerson?.name ?? listTitle,
-  );
   const [eventPanelOpen, setEventPanelOpen] = useState(false);
   const [eventPersonIds, setEventPersonIds] = useState<string[]>([]);
 
@@ -101,16 +94,14 @@ export function PeopleWithPanel({
 
     if (result.ok) {
       setPanelPerson(result.data);
-      setPanelTitle(result.data.name);
     }
 
     setPanelLoading(false);
   }, []);
 
   const openPerson = useCallback(
-    (personId: string, personName?: string) => {
+    (personId: string) => {
       setPanelPersonId(personId);
-      setPanelTitle(personName ?? listTitle);
       syncUrl(personId);
 
       if (panelPerson?.id !== personId) {
@@ -118,13 +109,12 @@ export function PeopleWithPanel({
         void loadPerson(personId);
       }
     },
-    [listTitle, loadPerson, panelPerson?.id, syncUrl],
+    [loadPerson, panelPerson?.id, syncUrl],
   );
 
   const handlePersonUpdated = useCallback(
     (updatedPerson: SelectedPerson) => {
       setPanelPerson(updatedPerson);
-      setPanelTitle(updatedPerson.name);
       setPeople((current) =>
         current.map((person) =>
           person.id === updatedPerson.id
@@ -146,10 +136,9 @@ export function PeopleWithPanel({
   const closePanel = useCallback(() => {
     setPanelPersonId(null);
     setPanelPerson(null);
-    setPanelTitle(listTitle);
     setPanelLoading(false);
     syncUrl(null);
-  }, [listTitle, syncUrl]);
+  }, [syncUrl]);
 
   const handlePersonCreated = useCallback(
     (created: {
@@ -186,7 +175,6 @@ export function PeopleWithPanel({
         preferences: [],
         personNotes: [],
       });
-      setPanelTitle(created.name);
       setPanelLoading(false);
       syncUrl(created.id);
     },
@@ -211,21 +199,18 @@ export function PeopleWithPanel({
       if (!personId) {
         setPanelPersonId(null);
         setPanelPerson(null);
-        setPanelTitle(listTitle);
         setPanelLoading(false);
         return;
       }
 
-      const knownPerson = people.find((person) => person.id === personId);
       setPanelPersonId(personId);
-      setPanelTitle(knownPerson?.name ?? listTitle);
       setPanelPerson(null);
       void loadPerson(personId);
     }
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [listTitle, loadPerson, people]);
+  }, [loadPerson]);
 
   const openCreateEventForPerson = useCallback((personId: string) => {
     setEventPersonIds([personId]);
@@ -237,73 +222,41 @@ export function PeopleWithPanel({
     setEventPersonIds([]);
   }, []);
 
-  const showMobileDetail = Boolean(panelPersonId && !isDesktop);
-
   return (
     <>
-      {panelPersonId ? (
-        <SetPageChrome title={panelTitle} subtitle={t("detailSubtitle")} />
-      ) : (
-        <SetPageChrome
-          title={listTitle}
-          subtitle={listSubtitle}
-          action={<CreatePersonDialog onCreated={handlePersonCreated} />}
-        />
-      )}
-      {panelPersonId ? null : <PageActions />}
+      <SetPageChrome
+        title={listTitle}
+        subtitle={listSubtitle}
+        action={<CreatePersonDialog onCreated={handlePersonCreated} />}
+      />
+      <PageActions />
 
-      {isDesktop ? (
-        <PeopleList
-          people={people}
-          onSelectPerson={openPerson}
-          onPersonCreated={handlePersonCreated}
-        />
-      ) : (
-        <FadePresence presenceKey={showMobileDetail ? "detail" : "list"}>
-          {showMobileDetail ? (
-            panelLoading || !panelPerson ? (
-              <PersonDetailSkeleton />
-            ) : (
+      <PeopleList
+        people={people}
+        onSelectPerson={openPerson}
+        onPersonCreated={handlePersonCreated}
+      />
+
+      <PersonSlidePanel open={Boolean(panelPersonId)} onClose={closePanel}>
+        {panelLoading || !panelPerson ? (
+          <PersonDetailSkeleton />
+        ) : (
           <PersonDetail
             person={panelPerson}
-            onBack={closePanel}
+            variant="panel"
             onDeleted={() => handlePersonDeleted(panelPerson.id)}
             onPersonUpdated={handlePersonUpdated}
             onCreateEvent={openCreateEventForPerson}
           />
-            )
-          ) : (
-            <PeopleList
-              people={people}
-              onSelectPerson={openPerson}
-              onPersonCreated={handlePersonCreated}
-            />
-          )}
-        </FadePresence>
-      )}
-
-      {isDesktop ? (
-        <PersonSlidePanel open={Boolean(panelPersonId)} onClose={closePanel}>
-          {panelLoading || !panelPerson ? (
-            <PersonDetailSkeleton />
-          ) : (
-            <PersonDetail
-              person={panelPerson}
-              variant="panel"
-              onDeleted={() => handlePersonDeleted(panelPerson.id)}
-              onPersonUpdated={handlePersonUpdated}
-              onCreateEvent={openCreateEventForPerson}
-            />
-          )}
-        </PersonSlidePanel>
-      ) : null}
+        )}
+      </PersonSlidePanel>
 
       <EventSlidePanel
         open={eventPanelOpen}
         mode="create"
         people={personOptions}
         defaultPersonIds={eventPersonIds}
-        stacked={isDesktop && Boolean(panelPersonId)}
+        stacked={Boolean(panelPersonId)}
         onClose={closeEventPanel}
         onCreated={closeEventPanel}
       />

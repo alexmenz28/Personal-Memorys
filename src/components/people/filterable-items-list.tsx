@@ -3,6 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormActions } from "@/shared/components/layout/form-actions";
 import { cn } from "@/shared/lib/utils";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -163,9 +164,11 @@ export function FilterableItemsList<T extends { id: string }>({
       )}
 
       {showExpand ? (
-        <Button variant="outline" size="sm" onClick={handleToggleExpanded}>
-          {expanded ? viewLessLabel : viewAllLabel(items.length)}
-        </Button>
+        <FormActions>
+          <Button variant="outline" size="sm" onClick={handleToggleExpanded}>
+            {expanded ? viewLessLabel : viewAllLabel(items.length)}
+          </Button>
+        </FormActions>
       ) : null}
     </div>
   );

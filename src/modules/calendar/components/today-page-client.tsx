@@ -15,6 +15,7 @@ import {
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
+import { matchesAnnualDate } from "@/shared/lib/recurring-events";
 import { useCallback, useMemo, useState } from "react";
 
 type TodayPageClientProps = {
@@ -57,11 +58,21 @@ export function TodayPageClient({
     (updated: Parameters<typeof serializeEvent>[0]) => {
       const serialized = serializeEvent(updated);
       setEvents((current) => {
-        if (serialized.isUndated || serialized.date !== today) {
+        const appearsToday =
+          serialized.date &&
+          (serialized.isRecurring
+            ? matchesAnnualDate(serialized.date, today)
+            : serialized.date === today);
+
+        if (serialized.isUndated || !appearsToday) {
           return removeCalendarEvent(current, serialized.id);
         }
 
-        return replaceCalendarEvent(current, serialized);
+        const nextEvent = serialized.isRecurring
+          ? { ...serialized, occurrenceDate: today }
+          : serialized;
+
+        return replaceCalendarEvent(current, nextEvent);
       });
       setSelectedEventId(null);
     },

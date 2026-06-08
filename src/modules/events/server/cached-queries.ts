@@ -1,5 +1,6 @@
 import "server-only";
 
+import { getEventOccurrencesInRange } from "@/modules/events/server/occurrences";
 import { eventsRepository } from "@/modules/events/server/repository";
 import { updateTag, unstable_cache } from "next/cache";
 
@@ -10,7 +11,7 @@ export function getCachedEventsForDateRange(
 ) {
   return unstable_cache(
     async () =>
-      eventsRepository.findForDateRange(userProfileId, startDate, endDate),
+      getEventOccurrencesInRange(userProfileId, startDate, endDate),
     ["events-range", userProfileId, startDate, endDate],
     { revalidate: 30, tags: [`events-${userProfileId}`] },
   )();

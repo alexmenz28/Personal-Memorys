@@ -4,11 +4,35 @@ import type {
   CreateEventInput,
   UpdateEventInput,
 } from "@/modules/events/schemas/event.schema";
+import { remindersRepository } from "@/modules/reminders/server/repository";
 import { db } from "@/shared/server/db";
 import { parseDateOnly } from "@/shared/lib/dates";
 
+const eventPeopleInclude = {
+  eventPeople: {
+    include: {
+      person: {
+        select: { id: true, name: true, relationship: true },
+      },
+    },
+  },
+} as const;
+
+const remindersInclude = {
+  reminders: {
+    where: { channel: "EMAIL" as const, isActive: true },
+    take: 1,
+    select: { daysBefore: true },
+  },
+} as const;
+
+const defaultEventInclude = {
+  ...eventPeopleInclude,
+  ...remindersInclude,
+} as const;
+
 export const eventsRepository = {
-  findForDateRange(
+  findNonRecurringInDateRange(
     userProfileId: string,
     startDate: string,
     endDate: string,
@@ -17,22 +41,41 @@ export const eventsRepository = {
       where: {
         userProfileId,
         isUndated: false,
+        isRecurring: false,
         date: {
           gte: parseDateOnly(startDate),
           lte: parseDateOnly(endDate),
         },
       },
-      include: {
-        eventPeople: {
-          include: {
-            person: {
-              select: { id: true, name: true, relationship: true },
-            },
-          },
-        },
-      },
+      include: defaultEventInclude,
       orderBy: [{ date: "asc" }, { title: "asc" }],
     });
+  },
+
+  findRecurringDated(userProfileId: string) {
+    return db.event.findMany({
+      where: {
+        userProfileId,
+        isUndated: false,
+        isRecurring: true,
+        date: { not: null },
+      },
+      include: defaultEventInclude,
+      orderBy: [{ date: "asc" }, { title: "asc" }],
+    });
+  },
+
+  /** @deprecated Use getEventOccurrencesInRange for reads that include annual recurrence. */
+  findForDateRange(
+    userProfileId: string,
+    startDate: string,
+    endDate: string,
+  ) {
+    return this.findNonRecurringInDateRange(
+      userProfileId,
+      startDate,
+      endDate,
+    );
   },
 
   findAllDated(userProfileId: string) {
@@ -42,15 +85,7 @@ export const eventsRepository = {
         isUndated: false,
         date: { not: null },
       },
-      include: {
-        eventPeople: {
-          include: {
-            person: {
-              select: { id: true, name: true, relationship: true },
-            },
-          },
-        },
-      },
+      include: defaultEventInclude,
       orderBy: [{ date: "asc" }, { title: "asc" }],
     });
   },
@@ -74,20 +109,14 @@ export const eventsRepository = {
   findByIdForProfile(eventId: string, userProfileId: string) {
     return db.event.findFirst({
       where: { id: eventId, userProfileId },
-      include: {
-        eventPeople: {
-          include: {
-            person: { select: { id: true, name: true } },
-          },
-        },
-      },
+      include: defaultEventInclude,
     });
   },
 
-  create(userProfileId: string, input: CreateEventInput) {
-    const { personIds, date, ...rest } = input;
+  async create(userProfileId: string, input: CreateEventInput) {
+    const { personIds, date, reminderDaysBefore, ...rest } = input;
 
-    return db.event.create({
+    const event = await db.event.create({
       data: {
         userProfileId,
         title: rest.title,
@@ -101,21 +130,29 @@ export const eventsRepository = {
             }
           : undefined,
       },
-      include: {
-        eventPeople: {
-          include: { person: { select: { id: true, name: true } } },
-        },
-      },
+      include: defaultEventInclude,
     });
+
+    if (!rest.isUndated && reminderDaysBefore != null) {
+      await remindersRepository.syncEmailReminder(event.id, reminderDaysBefore);
+    }
+
+    const refreshed = await this.findByIdForProfile(event.id, userProfileId);
+
+    if (!refreshed) {
+      throw new Error("Event not found after create.");
+    }
+
+    return refreshed;
   },
 
-  update(userProfileId: string, input: UpdateEventInput) {
-    const { id, personIds, date, ...rest } = input;
+  async update(userProfileId: string, input: UpdateEventInput) {
+    const { id, personIds, date, reminderDaysBefore, ...rest } = input;
 
-    return db.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       await tx.eventPerson.deleteMany({ where: { eventId: id } });
 
-      return tx.event.update({
+      await tx.event.update({
         where: { id, userProfileId },
         data: {
           title: rest.title,
@@ -129,13 +166,21 @@ export const eventsRepository = {
               }
             : undefined,
         },
-        include: {
-          eventPeople: {
-            include: { person: { select: { id: true, name: true } } },
-          },
-        },
       });
     });
+
+    const nextReminderDays =
+      rest.isUndated ? null : (reminderDaysBefore ?? null);
+
+    await remindersRepository.syncEmailReminder(id, nextReminderDays);
+
+    const refreshed = await this.findByIdForProfile(id, userProfileId);
+
+    if (!refreshed) {
+      throw new Error("Event not found after update.");
+    }
+
+    return refreshed;
   },
 
   delete(eventId: string, userProfileId: string) {

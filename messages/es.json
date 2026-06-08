@@ -4,6 +4,9 @@
     "loading": "Cargando...",
     "save": "Guardar",
     "cancel": "Cancelar",
+    "yes": "Sí",
+    "no": "No",
+    "emptyValue": "—",
     "back": "Volver",
     "comingSoon": "Próximamente"
   },
@@ -46,7 +49,8 @@
     "selectYear": "Seleccionar año",
     "goToToday": "Hoy",
     "closeDayDetail": "Cerrar",
-    "dayDetailCount": "{count, plural, =0 {Sin actividades} one {# actividad} other {# actividades}}"
+    "dayDetailCount": "{count, plural, =0 {Sin actividades} one {# actividad} other {# actividades}}",
+    "recurring": "Anual"
   },
   "events": {
     "addEvent": "Agregar evento",
@@ -69,7 +73,26 @@
     "deleteEvent": "Eliminar evento",
     "deleteEventTitle": "¿Eliminar este evento?",
     "deleteEventDescription": "Esta acción no se puede deshacer.",
-    "addEventForPerson": "Agregar evento"
+    "addEventForPerson": "Agregar evento",
+    "recurring": "Anual",
+    "recurringHint": "Se repite cada año en la misma fecha (cumpleaños, aniversarios…).",
+    "saveConfirmTitle": "¿Guardar cambios en el evento?",
+    "saveConfirmDescription": "Revisa el resumen antes de confirmar.",
+    "yes": "Sí",
+    "no": "No",
+    "emptyValue": "—",
+    "reminderEmail": "Recordatorio por email",
+    "reminderDaysBefore": "Avisar con anticipación",
+    "reminderHint": "Recibirás un email según tu zona horaria en Ajustes.",
+    "reminderDisabled": "Desactivado",
+    "reminderDays": {
+      "0": "El mismo día",
+      "1": "1 día antes",
+      "3": "3 días antes",
+      "7": "1 semana antes",
+      "14": "2 semanas antes",
+      "30": "1 mes antes"
+    }
   },
   "people": {
     "title": "Personas",
@@ -110,6 +133,9 @@
     "deletePerson": "Eliminar",
     "deleteConfirmTitle": "¿Eliminar a {name}?",
     "deleteConfirmDescription": "Se eliminarán todas sus preferencias, notas y vínculos con eventos. Esta acción no se puede deshacer.",
+    "saveConfirmTitle": "¿Guardar cambios en el perfil?",
+    "saveConfirmDescription": "Revisa el resumen antes de confirmar.",
+    "emptyValue": "—",
     "relationships": {
       "PARTNER": "Pareja",
       "FAMILY": "Familia",
