@@ -1,7 +1,7 @@
 import { REMINDER_DAY_OPTIONS } from "@/modules/reminders/schemas/reminder.schema";
 import { z } from "zod";
 
-const reminderDaysBeforeSchema = z
+const reminderDayOptionSchema = z
   .number()
   .int()
   .refine(
@@ -10,7 +10,11 @@ const reminderDaysBeforeSchema = z
         value as (typeof REMINDER_DAY_OPTIONS)[number],
       ),
     "Invalid reminder offset",
-  )
+  );
+
+const reminderDaysBeforeSchema = z
+  .array(reminderDayOptionSchema)
+  .max(REMINDER_DAY_OPTIONS.length)
   .nullable()
   .optional();
 
@@ -38,7 +42,8 @@ export const createEventSchema = datedEventRules
     "Recurring events cannot be undated",
   )
   .refine(
-    (data) => data.isUndated ? !data.reminderDaysBefore : true,
+    (data) =>
+      data.isUndated ? !(data.reminderDaysBefore?.length ?? 0) : true,
     "Undated events cannot have reminders",
   );
 
@@ -61,7 +66,8 @@ export const updateEventSchema = datedEventRules
     "Recurring events cannot be undated",
   )
   .refine(
-    (data) => data.isUndated ? !data.reminderDaysBefore : true,
+    (data) =>
+      data.isUndated ? !(data.reminderDaysBefore?.length ?? 0) : true,
     "Undated events cannot have reminders",
   );
 

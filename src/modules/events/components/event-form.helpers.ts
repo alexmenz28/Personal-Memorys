@@ -5,14 +5,20 @@ export function toReminderDaysBefore(values: EventFormValues) {
     return null;
   }
 
-  return values.reminderDaysBefore;
+  const offsets = [...new Set(values.reminderDaysBefore)].sort(
+    (left, right) => left - right,
+  );
+
+  return offsets.length > 0 ? offsets : null;
 }
 
 export function reminderDaysFromEvent(
-  reminderDaysBefore: number | null | undefined,
+  reminderDaysBefore: number[] | null | undefined,
 ): Pick<EventFormValues, "reminderEnabled" | "reminderDaysBefore"> {
+  const offsets = reminderDaysBefore ?? [];
+
   return {
-    reminderEnabled: reminderDaysBefore != null,
-    reminderDaysBefore: reminderDaysBefore ?? 7,
+    reminderEnabled: offsets.length > 0,
+    reminderDaysBefore: offsets.length > 0 ? offsets : [7],
   };
 }

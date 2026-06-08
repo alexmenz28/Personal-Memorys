@@ -7,20 +7,33 @@ import { useTranslations } from "next-intl";
 
 type EventReminderFieldsProps = {
   enabled: boolean;
-  daysBefore: number;
+  selectedOffsets: number[];
   disabled?: boolean;
   onEnabledChange: (enabled: boolean) => void;
-  onDaysBeforeChange: (daysBefore: number) => void;
+  onOffsetsChange: (offsets: number[]) => void;
 };
 
 export function EventReminderFields({
   enabled,
-  daysBefore,
+  selectedOffsets,
   disabled = false,
   onEnabledChange,
-  onDaysBeforeChange,
+  onOffsetsChange,
 }: EventReminderFieldsProps) {
   const t = useTranslations("events");
+
+  function toggleOffset(daysBefore: number) {
+    if (selectedOffsets.includes(daysBefore)) {
+      onOffsetsChange(
+        selectedOffsets.filter((offset) => offset !== daysBefore),
+      );
+      return;
+    }
+
+    onOffsetsChange(
+      [...selectedOffsets, daysBefore].sort((left, right) => left - right),
+    );
+  }
 
   return (
     <div className="space-y-3 rounded-xl border border-border/60 bg-muted/20 p-4">
@@ -46,10 +59,10 @@ export function EventReminderFields({
                 key={option}
                 type="button"
                 disabled={disabled}
-                onClick={() => onDaysBeforeChange(option)}
+                onClick={() => toggleOffset(option)}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  daysBefore === option
+                  selectedOffsets.includes(option)
                     ? "border-primary/30 bg-primary/10 text-foreground"
                     : "border-border/60 bg-background text-muted-foreground hover:text-foreground",
                 )}

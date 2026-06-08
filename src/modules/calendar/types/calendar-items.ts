@@ -23,7 +23,7 @@ export type SerializedEvent = {
   occurrenceDate?: string | null;
   isUndated: boolean;
   isRecurring: boolean;
-  reminderDaysBefore: number | null;
+  reminderDaysBefore: number[];
   eventPeople: Array<{ person: { id: string; name: string } }>;
 };
 
@@ -167,7 +167,10 @@ export function serializeEvent(event: {
       : null,
     isUndated: event.isUndated,
     isRecurring: event.isRecurring ?? false,
-    reminderDaysBefore: event.reminders?.[0]?.daysBefore ?? null,
+    reminderDaysBefore:
+      event.reminders
+        ?.map((reminder) => reminder.daysBefore)
+        .sort((left, right) => left - right) ?? [],
     eventPeople: event.eventPeople,
   };
 }

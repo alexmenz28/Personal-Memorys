@@ -2,7 +2,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 import { getCurrentUserProfile } from "@/modules/auth/server/session";
 import type { ThemePreference } from "@/shared/lib/theme";
 import type { Metadata } from "next";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTimeZone } from "next-intl/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -26,6 +26,7 @@ export default async function RootLayout({
 }>) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const timeZone = await getTimeZone();
   const profile = await getCurrentUserProfile();
   const userTheme = profile?.theme as ThemePreference | undefined;
 
@@ -39,6 +40,7 @@ export default async function RootLayout({
         <AppProviders
           locale={locale}
           messages={messages}
+          timeZone={timeZone}
           userTheme={userTheme}
         >
           {children}

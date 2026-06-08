@@ -83,7 +83,7 @@
     "emptyValue": "—",
     "reminderEmail": "Recordatorio por email",
     "reminderDaysBefore": "Avisar con anticipación",
-    "reminderHint": "Recibirás un email según tu zona horaria en Ajustes.",
+    "reminderHint": "Puedes elegir varios avisos. Se envían por la mañana (según tu zona horaria en Ajustes).",
     "reminderDisabled": "Desactivado",
     "reminderDays": {
       "0": "El mismo día",

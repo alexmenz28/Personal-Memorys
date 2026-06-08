@@ -24,7 +24,7 @@ export type EventFormValues = {
   isRecurring: boolean;
   personIds: string[];
   reminderEnabled: boolean;
-  reminderDaysBefore: number;
+  reminderDaysBefore: number[];
 };
 
 type EventFormProps = {
@@ -47,7 +47,7 @@ const defaultValues: EventFormValues = {
   isRecurring: false,
   personIds: [],
   reminderEnabled: false,
-  reminderDaysBefore: 7,
+  reminderDaysBefore: [],
 };
 
 function resolveInitialValues(
@@ -61,7 +61,7 @@ function resolveInitialValues(
     ...initialValues,
     reminderEnabled:
       initialValues?.reminderEnabled ??
-      (initialValues?.reminderDaysBefore != null
+      ((initialValues?.reminderDaysBefore?.length ?? 0) > 0
         ? true
         : defaultValues.reminderEnabled),
     reminderDaysBefore,
@@ -112,6 +112,15 @@ export function EventForm({
     if (checked) {
       setIsRecurring(false);
       setReminderEnabled(false);
+      setReminderDaysBefore([]);
+    }
+  }
+
+  function handleReminderEnabledChange(enabled: boolean) {
+    setReminderEnabled(enabled);
+
+    if (enabled && reminderDaysBefore.length === 0) {
+      setReminderDaysBefore([7]);
     }
   }
 
@@ -206,10 +215,10 @@ export function EventForm({
             ) : null}
             <EventReminderFields
               enabled={reminderEnabled}
-              daysBefore={reminderDaysBefore}
+              selectedOffsets={reminderDaysBefore}
               disabled={isPending}
-              onEnabledChange={setReminderEnabled}
-              onDaysBeforeChange={setReminderDaysBefore}
+              onEnabledChange={handleReminderEnabledChange}
+              onOffsetsChange={setReminderDaysBefore}
             />
           </>
         ) : null}

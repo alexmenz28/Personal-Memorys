@@ -133,8 +133,8 @@ export const eventsRepository = {
       include: defaultEventInclude,
     });
 
-    if (!rest.isUndated && reminderDaysBefore != null) {
-      await remindersRepository.syncEmailReminder(event.id, reminderDaysBefore);
+    if (!rest.isUndated && reminderDaysBefore?.length) {
+      await remindersRepository.syncEmailReminders(event.id, reminderDaysBefore);
     }
 
     const refreshed = await this.findByIdForProfile(event.id, userProfileId);
@@ -169,10 +169,11 @@ export const eventsRepository = {
       });
     });
 
-    const nextReminderDays =
-      rest.isUndated ? null : (reminderDaysBefore ?? null);
+    const nextReminderDays = rest.isUndated
+      ? null
+      : (reminderDaysBefore ?? null);
 
-    await remindersRepository.syncEmailReminder(id, nextReminderDays);
+    await remindersRepository.syncEmailReminders(id, nextReminderDays);
 
     const refreshed = await this.findByIdForProfile(id, userProfileId);
 

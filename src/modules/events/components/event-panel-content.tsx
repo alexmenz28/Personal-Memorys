@@ -139,8 +139,16 @@ export function EventPanelContent({
       yes: t("yes"),
       no: t("no"),
       empty: t("emptyValue"),
-      formatReminder: (enabled, daysBefore) =>
-        enabled ? t(`reminderDays.${daysBefore}`) : t("reminderDisabled"),
+      formatReminder: (enabled, daysBefore) => {
+        if (!enabled || daysBefore.length === 0) {
+          return t("reminderDisabled");
+        }
+
+        return [...daysBefore]
+          .sort((left, right) => left - right)
+          .map((offset) => t(`reminderDays.${offset}`))
+          .join(", ");
+      },
       formatPeople: (names) =>
         names.length > 0 ? names.join(", ") : t("emptyValue"),
       formatDate: (dateValue, isUndated) => {

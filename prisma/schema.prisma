@@ -202,6 +202,7 @@ model Reminder {
   event      Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   deliveries ReminderDelivery[]
 
+  @@unique([eventId, daysBefore, channel])
   @@index([eventId])
   @@map("reminders")
 }

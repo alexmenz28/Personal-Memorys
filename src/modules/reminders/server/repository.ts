@@ -4,34 +4,67 @@ import { parseDateOnly } from "@/shared/lib/dates";
 import { db } from "@/shared/server/db";
 
 export const remindersRepository = {
-  syncEmailReminder(eventId: string, daysBefore: number | null | undefined) {
+  syncEmailReminders(
+    eventId: string,
+    daysBeforeList: number[] | null | undefined,
+  ) {
     return db.$transaction(async (tx) => {
-      const existing = await tx.reminder.findFirst({
+      const existing = await tx.reminder.findMany({
         where: { eventId, channel: "EMAIL" },
       });
 
-      if (daysBefore === null || daysBefore === undefined) {
-        if (existing) {
-          await tx.reminder.delete({ where: { id: existing.id } });
+      const targetDays = [...new Set(daysBeforeList ?? [])].sort(
+        (left, right) => left - right,
+      );
+
+      if (targetDays.length === 0) {
+        if (existing.length > 0) {
+          await tx.reminder.deleteMany({
+            where: { eventId, channel: "EMAIL" },
+          });
         }
 
-        return null;
+        return [];
       }
 
-      if (existing) {
-        return tx.reminder.update({
-          where: { id: existing.id },
-          data: { daysBefore, isActive: true },
-        });
+      const targetSet = new Set(targetDays);
+      const existingByDays = new Map(
+        existing.map((reminder) => [reminder.daysBefore, reminder]),
+      );
+
+      for (const reminder of existing) {
+        if (!targetSet.has(reminder.daysBefore)) {
+          await tx.reminder.delete({ where: { id: reminder.id } });
+        }
       }
 
-      return tx.reminder.create({
-        data: {
-          eventId,
-          daysBefore,
-          channel: "EMAIL",
-        },
-      });
+      const synced = [];
+
+      for (const daysBefore of targetDays) {
+        const current = existingByDays.get(daysBefore);
+
+        if (current) {
+          synced.push(
+            await tx.reminder.update({
+              where: { id: current.id },
+              data: { isActive: true },
+            }),
+          );
+          continue;
+        }
+
+        synced.push(
+          await tx.reminder.create({
+            data: {
+              eventId,
+              daysBefore,
+              channel: "EMAIL",
+            },
+          }),
+        );
+      }
+
+      return synced;
     });
   },
 

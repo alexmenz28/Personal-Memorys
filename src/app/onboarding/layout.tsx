@@ -1,6 +1,6 @@
 import { AuthGate } from "@/components/auth/auth-gate";
+import { PostAuthRedirect } from "@/components/auth/post-auth-redirect";
 import { resolveUserProfile } from "@/modules/auth/server/session";
-import { redirect } from "next/navigation";
 
 export default async function OnboardingLayout({
   children,
@@ -10,7 +10,7 @@ export default async function OnboardingLayout({
   const profile = await resolveUserProfile();
 
   if (profile?.onboardingCompleted) {
-    redirect("/today");
+    return <PostAuthRedirect to="/today" />;
   }
 
   return <AuthGate>{children}</AuthGate>;

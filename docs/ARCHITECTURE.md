@@ -122,7 +122,7 @@ Not a strict law: ~10% of users are left-handed; bottom placement often matters 
 |---------|--------|
 | `EventForm` (`footerLayout="panel"`) | Campos + `FloatingFormActions` |
 | `PersonDetail` (`variant="panel"`) | Contenido + Eliminar · Guardar flotantes |
-| Modales (`DialogContent`) | `max-h` + form `flex-col`; campos scroll, `DialogFooter` al pie |
+| Modales (`DialogContent`) | `max-h` + form `flex-col`; campos scroll; acciones al pie sin barra (solo botones alineados a la derecha) |
 
 Confirmación al modificar: `diffEventFormChanges` / `diffPersonProfileChanges` → `ConfirmDialog` + `ChangeSummary`.
 
@@ -135,9 +135,9 @@ Module: `src/modules/reminders/`
 | Piece | Role |
 |-------|------|
 | `EventReminderFields` | UI in event form (dated events only); preset chips for days-before |
-| `reminders/server/repository.ts` | Sync one EMAIL reminder per event; delivery log |
-| `reminders/server/delivery.service.ts` | Daily window: `today + daysBefore` in user timezone |
+| `reminders/server/repository.ts` | Sync EMAIL reminders per event (multiple offsets); delivery log |
+| `reminders/server/delivery.service.ts` | Daily window: `today + daysBefore` in user timezone (date-only, no event hour) |
 | `reminders/server/email-templates.ts` | HTML templates en/es |
-| Inngest `send-daily-reminders` | Cron `0 8 * * *` UTC |
+| Inngest `send-daily-reminders` | Cron `0 8 * * *` UTC (~morning batch; dev `reminders:run` sends immediately) |
 
 Requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL`. Without them, the job skips sends (dev-safe).

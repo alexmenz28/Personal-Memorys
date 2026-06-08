@@ -28,7 +28,7 @@ type EventDiffInput = {
   isRecurring: boolean;
   personIds: string[];
   reminderEnabled: boolean;
-  reminderDaysBefore: number;
+  reminderDaysBefore: number[];
 };
 
 type EventDiffLabels = {
@@ -44,8 +44,19 @@ type EventDiffLabels = {
   empty: string;
   formatPeople: (names: string[]) => string;
   formatDate: (date: string, isUndated: boolean) => string;
-  formatReminder: (enabled: boolean, daysBefore: number) => string;
+  formatReminder: (enabled: boolean, daysBefore: number[]) => string;
 };
+
+function sameReminderOffsets(left: number[], right: number[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const sortedLeft = [...left].sort((a, b) => a - b);
+  const sortedRight = [...right].sort((a, b) => a - b);
+
+  return sortedLeft.every((value, index) => value === sortedRight[index]);
+}
 
 export function diffEventFormChanges(
   initial: Partial<EventDiffInput>,
@@ -101,17 +112,21 @@ export function diffEventFormChanges(
   }
 
   const initialReminderEnabled = initial.reminderEnabled ?? false;
-  const initialReminderDays = initial.reminderDaysBefore ?? 7;
-  const beforeReminder = labels.formatReminder(
-    initialReminderEnabled,
-    initialReminderDays,
-  );
-  const afterReminder = labels.formatReminder(
-    current.reminderEnabled,
-    current.reminderDaysBefore,
-  );
+  const initialReminderDays = initial.reminderDaysBefore ?? [];
+  const currentReminderDays = current.reminderDaysBefore;
 
-  if (beforeReminder !== afterReminder) {
+  if (
+    initialReminderEnabled !== current.reminderEnabled ||
+    !sameReminderOffsets(initialReminderDays, currentReminderDays)
+  ) {
+    const beforeReminder = labels.formatReminder(
+      initialReminderEnabled,
+      initialReminderDays,
+    );
+    const afterReminder = labels.formatReminder(
+      current.reminderEnabled,
+      currentReminderDays,
+    );
     changes.push({
       field: "reminder",
       label: labels.reminder,

@@ -83,7 +83,7 @@
     "emptyValue": "—",
     "reminderEmail": "Email reminder",
     "reminderDaysBefore": "Notify in advance",
-    "reminderHint": "You'll receive an email based on your timezone in Settings.",
+    "reminderHint": "You can pick multiple reminders. They're sent in the morning (using your timezone in Settings).",
     "reminderDisabled": "Disabled",
     "reminderDays": {
       "0": "On the day",
