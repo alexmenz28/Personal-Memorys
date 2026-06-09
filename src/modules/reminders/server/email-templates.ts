@@ -40,7 +40,7 @@ const copy: Record<string, LocaleCopy> = {
         : daysBefore === 1
           ? "Your event is tomorrow"
           : `Your event is in ${daysBefore} days`,
-    body: (eventDate) =>
+    body: (_eventDate) =>
       `This is a friendly reminder so you have time to prepare.`,
     dateLabel: "Event date",
     timingLabel: (days) =>

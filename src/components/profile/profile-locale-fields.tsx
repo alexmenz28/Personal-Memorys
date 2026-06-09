@@ -1,5 +1,6 @@
 "use client";
 
+import { FormSelect } from "@/components/ui/form-select";
 import { Label } from "@/components/ui/label";
 import {
   getTimezonesForCountry,
@@ -55,36 +56,28 @@ export function ProfileLocaleFields({
     <>
       <div className="space-y-2">
         <Label htmlFor="country">{labels.country}</Label>
-        <select
+        <FormSelect
           id="country"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           value={form.countryCode}
-          onChange={(event) => handleCountryChange(event.target.value)}
-        >
-          {supportedCountries.map((country) => (
-            <option key={country.code} value={country.code}>
-              {country.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={handleCountryChange}
+          options={supportedCountries.map((country) => ({
+            value: country.code,
+            label: country.label,
+          }))}
+        />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="timezone">{labels.timezone}</Label>
-        <select
+        <FormSelect
           id="timezone"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           value={form.timezone}
-          onChange={(event) =>
-            onChange({ ...form, timezone: event.target.value })
-          }
-        >
-          {timezones.map((timezone) => (
-            <option key={timezone} value={timezone}>
-              {timezone}
-            </option>
-          ))}
-        </select>
+          onValueChange={(timezone) => onChange({ ...form, timezone })}
+          options={timezones.map((timezone) => ({
+            value: timezone,
+            label: timezone,
+          }))}
+        />
         {labels.timezoneHint ? (
           <p className="text-xs text-muted-foreground">{labels.timezoneHint}</p>
         ) : null}
@@ -92,20 +85,20 @@ export function ProfileLocaleFields({
 
       <div className="space-y-2">
         <Label htmlFor="language">{labels.language}</Label>
-        <select
+        <FormSelect
           id="language"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
           value={form.locale}
-          onChange={(event) =>
+          onValueChange={(locale) =>
             onChange({
               ...form,
-              locale: event.target.value as UpdateProfileInput["locale"],
+              locale: locale as UpdateProfileInput["locale"],
             })
           }
-        >
-          <option value="en">English</option>
-          <option value="es">Spanish</option>
-        </select>
+          options={[
+            { value: "en", label: "English" },
+            { value: "es", label: "Spanish" },
+          ]}
+        />
       </div>
     </>
   );

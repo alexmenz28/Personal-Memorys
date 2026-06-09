@@ -5,9 +5,15 @@ import { sendReminderEmail } from "@/modules/reminders/server/email.service";
 import {
   addDaysToDateString,
   getDateStringInTimezone,
+  getHourInTimezone,
   toIsoString,
 } from "@/shared/lib/dates";
 import { matchesAnnualDate } from "@/shared/lib/recurring-events";
+
+type ProcessDailyRemindersOptions = {
+  /** Dev/manual runs skip the user's preferred send hour. */
+  ignoreHour?: boolean;
+};
 
 function eventMatchesOccurrence(
   event: {
@@ -30,13 +36,39 @@ function eventMatchesOccurrence(
   return storedDate === occurrenceDate;
 }
 
-export async function processDailyReminders() {
+function isWithinReminderWindow(
+  timezone: string,
+  reminderHour: number,
+  ignoreHour: boolean,
+) {
+  if (ignoreHour) {
+    return true;
+  }
+
+  return getHourInTimezone(timezone) === reminderHour;
+}
+
+export async function processDailyReminders(
+  options: ProcessDailyRemindersOptions = {},
+) {
   const reminders = await remindersRepository.findActiveEmailRemindersForDelivery();
   let sent = 0;
   let skipped = 0;
 
   for (const reminder of reminders) {
     const profile = reminder.event.userProfile;
+
+    if (
+      !isWithinReminderWindow(
+        profile.timezone,
+        profile.reminderHour,
+        options.ignoreHour ?? false,
+      )
+    ) {
+      skipped += 1;
+      continue;
+    }
+
     const today = getDateStringInTimezone(profile.timezone);
     const occurrenceDate = addDaysToDateString(today, reminder.daysBefore);
 

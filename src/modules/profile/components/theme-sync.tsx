@@ -9,17 +9,22 @@ type ThemeSyncProps = {
 };
 
 export function ThemeSync({ theme }: ThemeSyncProps) {
-  const { setTheme } = useTheme();
-  const hasSynced = useRef(false);
+  const { setTheme, theme: currentTheme } = useTheme();
+  const syncedThemeRef = useRef<ThemePreference | null>(null);
 
   useEffect(() => {
-    if (hasSynced.current) {
+    if (syncedThemeRef.current === theme) {
       return;
     }
 
-    hasSynced.current = true;
-    setTheme(toNextTheme(theme));
-  }, [theme, setTheme]);
+    const nextTheme = toNextTheme(theme);
+
+    if (currentTheme !== nextTheme) {
+      setTheme(nextTheme);
+    }
+
+    syncedThemeRef.current = theme;
+  }, [currentTheme, setTheme, theme]);
 
   return null;
 }

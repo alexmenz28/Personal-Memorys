@@ -14,7 +14,7 @@ export function ThemeProvider({ children, userTheme }: ThemeProviderProps) {
       attribute="class"
       defaultTheme={userTheme ? toNextTheme(userTheme) : "light"}
       enableSystem
-      disableTransitionOnChange={false}
+      disableTransitionOnChange
       storageKey="personal-memories-theme"
     >
       {children}

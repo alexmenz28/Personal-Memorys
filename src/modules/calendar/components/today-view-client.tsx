@@ -1,17 +1,12 @@
 "use client";
 
-import { CalendarTimeline } from "@/modules/calendar/components/calendar-timeline";
-import {
-  buildCalendarDayItems,
-  serializeEvent,
-  serializeHoliday,
-  type SerializedEvent,
-  type SerializedHoliday,
+import { TodayActivitiesTimeline } from "@/modules/calendar/components/today-activities-timeline";
+import type { DatedEventSummary } from "@/modules/calendar/lib/dated-event-summary";
+import type {
+  SerializedEvent,
+  SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { matchesAnnualDate } from "@/shared/lib/recurring-events";
-import { formatDateForDisplay } from "@/shared/lib/dates";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
 
 type TodayViewClientProps = {
   today: string;
@@ -19,57 +14,13 @@ type TodayViewClientProps = {
   locale: string;
   holidays: SerializedHoliday[];
   events: SerializedEvent[];
-  onEventClick?: (eventId: string) => void;
+  allDatedEvents: DatedEventSummary[];
+  people: Array<{ id: string; name: string }>;
+  onEventClick?: (eventId: string, occurrenceDate: string) => void;
 };
 
-export function TodayViewClient({
-  today,
-  timezone,
-  locale,
-  holidays: initialHolidays,
-  events: initialEvents,
-  onEventClick,
-}: TodayViewClientProps) {
-  const t = useTranslations("today");
-  const [holidays, setHolidays] = useState(initialHolidays);
-  const [events, setEvents] = useState(initialEvents);
-
-  useEffect(() => {
-    setHolidays(initialHolidays);
-    setEvents(initialEvents);
-  }, [initialEvents, initialHolidays]);
-
-  const items = useMemo(
-    () => buildCalendarDayItems(holidays, events),
-    [events, holidays],
-  );
-
-  const formattedToday = formatDateForDisplay(
-    new Date(`${today}T12:00:00.000Z`),
-    locale,
-    timezone,
-  );
-
-  return (
-    <div className="space-y-6">
-      <p className="text-sm text-muted-foreground">{formattedToday}</p>
-      <CalendarTimeline
-        items={items.map((item) => ({
-          id: item.id,
-          title: item.title,
-          kind: item.kind,
-          description: item.description,
-          people: item.people,
-          isRecurring: item.isRecurring,
-        }))}
-        emptyMessage={t("empty")}
-        locale={locale}
-        timezone={timezone}
-        showDate={false}
-        onEventClick={onEventClick}
-      />
-    </div>
-  );
+export function TodayViewClient(props: TodayViewClientProps) {
+  return <TodayActivitiesTimeline {...props} />;
 }
 
 export function mergeTodayEvent(

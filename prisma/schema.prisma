@@ -65,17 +65,35 @@ model UserProfile {
   countryCode String   @map("country_code")
   regionCode  String?  @map("region_code")
   theme       ThemePreference @default(LIGHT)
+  reminderHour Int      @default(8) @map("reminder_hour")
   onboardingCompleted Boolean @default(false) @map("onboarding_completed")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  people         Person[]
-  events         Event[]
-  hiddenHolidays UserHiddenHoliday[]
-  subscription   Subscription?
-  deviceTokens   DeviceToken[]
+  people                 Person[]
+  events                 Event[]
+  hiddenHolidays         UserHiddenHoliday[]
+  subscription           Subscription?
+  deviceTokens           DeviceToken[]
+  preferenceCategories   UserPreferenceCategory[]
 
   @@map("user_profiles")
+}
+
+model UserPreferenceCategory {
+  id            String   @id @default(cuid())
+  userProfileId String   @map("user_profile_id")
+  label         String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  userProfile UserProfile  @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  preferences Preference[]
+  eventNotes  EventNote[]
+
+  @@unique([userProfileId, label])
+  @@index([userProfileId])
+  @@map("user_preference_categories")
 }
 
 model Subscription {
@@ -107,6 +125,7 @@ model Person {
   preferences Preference[]
   personNotes PersonNote[]
   eventPeople EventPerson[]
+  eventNotes  EventNote[]
 
   @@index([userProfileId])
   @@map("people")
@@ -115,13 +134,15 @@ model Person {
 model Preference {
   id        String             @id @default(cuid())
   personId  String             @map("person_id")
-  category  PreferenceCategory
-  label     String
-  value     String
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
+  category         PreferenceCategory @default(OTHER)
+  customCategoryId String?            @map("custom_category_id")
+  label            String
+  value            String
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person         Person                  @relation(fields: [personId], references: [id], onDelete: Cascade)
+  customCategory UserPreferenceCategory? @relation(fields: [customCategoryId], references: [id], onDelete: SetNull)
 
   @@index([personId])
   @@map("preferences")
@@ -178,15 +199,24 @@ model EventPerson {
 }
 
 model EventNote {
-  id        String   @id @default(cuid())
-  eventId   String   @map("event_id")
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id           String             @id @default(cuid())
+  eventId      String             @map("event_id")
+  personId     String?            @map("person_id")
+  preferenceId String?            @map("preference_id")
+  category         PreferenceCategory @default(OTHER)
+  customCategoryId String?            @map("custom_category_id")
+  label            String
+  value            String
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event          Event                   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  person         Person?                 @relation(fields: [personId], references: [id], onDelete: SetNull)
+  customCategory UserPreferenceCategory? @relation(fields: [customCategoryId], references: [id], onDelete: SetNull)
 
   @@index([eventId])
+  @@index([personId])
+  @@index([eventId, preferenceId])
   @@map("event_notes")
 }
 

@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormSelect } from "@/components/ui/form-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,10 +19,17 @@ import {
   updatePerson,
 } from "@/modules/people/actions/people.actions";
 import {
+  buildPreferenceCategoryOptions,
+  getPreferenceCategoryFilterKey,
+  resolvePreferenceCategoryLabel,
+  type CustomPreferenceCategory,
+} from "@/modules/people/lib/preference-categories";
+import {
   preferenceCategories,
   relationshipTypes,
 } from "@/modules/people/schemas/person.schema";
 import { ChangeSummary } from "@/shared/components/ui/change-summary";
+import { cn } from "@/shared/lib/utils";
 import { FloatingFormActions } from "@/shared/components/layout/floating-form-actions";
 import { FormActions } from "@/shared/components/layout/form-actions";
 import {
@@ -32,11 +40,12 @@ import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 type Preference = {
   id: string;
   category: string;
+  customCategoryId: string | null;
   label: string;
   value: string;
 };
@@ -60,6 +69,7 @@ type PersonDetailProps = {
   onDeleted?: () => void;
   onPersonUpdated?: (person: PersonDetailProps["person"]) => void;
   onCreateEvent?: (personId: string) => void;
+  customPreferenceCategories?: CustomPreferenceCategory[];
 };
 
 export function PersonDetail({
@@ -69,6 +79,7 @@ export function PersonDetail({
   onDeleted,
   onPersonUpdated,
   onCreateEvent,
+  customPreferenceCategories = [],
 }: PersonDetailProps) {
   const t = useTranslations("people");
   const tEvents = useTranslations("events");
@@ -78,8 +89,7 @@ export function PersonDetail({
   const [name, setName] = useState(person.name);
   const [relationship, setRelationship] = useState(person.relationship);
   const [notes, setNotes] = useState(person.notes ?? "");
-  const [prefCategory, setPrefCategory] =
-    useState<(typeof preferenceCategories)[number]>("FOOD");
+  const [prefCategory, setPrefCategory] = useState("FOOD");
   const [prefLabel, setPrefLabel] = useState("");
   const [prefValue, setPrefValue] = useState("");
   const [noteContent, setNoteContent] = useState("");
@@ -89,6 +99,30 @@ export function PersonDetail({
   const [saveChanges, setSaveChanges] = useState<FormChange[]>([]);
   const [preferences, setPreferences] = useState(person.preferences);
   const [personNotes, setPersonNotes] = useState(person.personNotes);
+
+  const categoryOptions = useMemo(
+    () =>
+      buildPreferenceCategoryOptions(
+        preferenceCategories.map((category) => ({
+          value: category,
+          label: t(`categories.${category}`),
+        })),
+        customPreferenceCategories,
+      ),
+    [customPreferenceCategories, t],
+  );
+
+  function getCategoryLabel(
+    category: string,
+    customCategoryId?: string | null,
+  ) {
+    return resolvePreferenceCategoryLabel(
+      category,
+      customCategoryId,
+      customPreferenceCategories,
+      (key) => t(`categories.${key}`),
+    );
+  }
 
   const savedProfile = {
     name: person.name,
@@ -168,7 +202,10 @@ export function PersonDetail({
 
       setSaveConfirmOpen(false);
       notifyPersonUpdated(preferences, personNotes, name);
-      router.refresh();
+
+      if (!onPersonUpdated && variant === "page") {
+        router.refresh();
+      }
     });
   }
 
@@ -187,9 +224,8 @@ export function PersonDetail({
         onDeleted();
       } else {
         router.push("/people");
+        router.refresh();
       }
-
-      router.refresh();
     });
   }
 
@@ -201,7 +237,7 @@ export function PersonDetail({
     startTransition(async () => {
       const result = await createPreference({
         personId: person.id,
-        category: prefCategory,
+        categoryRef: prefCategory,
         label: prefLabel,
         value: prefValue,
       });
@@ -314,7 +350,11 @@ export function PersonDetail({
   );
 
   return (
-    <div className={isPanel ? "space-y-6" : "mx-auto max-w-3xl space-y-6"}>
+    <div
+      className={cn(
+        isPanel ? "space-y-6 pb-24" : "mx-auto max-w-3xl space-y-6",
+      )}
+    >
       {!isPanel ? (
         onBack ? (
           <button
@@ -351,7 +391,9 @@ export function PersonDetail({
         </FormActions>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div
+        className={cn("grid gap-6", !isPanel && "lg:grid-cols-2")}
+      >
         <Card className="border-border/60">
           <CardHeader>
             <CardTitle>{t("profile")}</CardTitle>
@@ -367,18 +409,15 @@ export function PersonDetail({
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-relationship">{t("relationship")}</Label>
-              <select
+              <FormSelect
                 id="edit-relationship"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                 value={relationship}
-                onChange={(event) => setRelationship(event.target.value)}
-              >
-                {relationshipTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {t(`relationships.${type}`)}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setRelationship}
+                options={relationshipTypes.map((type) => ({
+                  value: type,
+                  label: t(`relationships.${type}`),
+                }))}
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-notes">{t("generalNotes")}</Label>
@@ -401,107 +440,117 @@ export function PersonDetail({
             <CardTitle>{t("preferences")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <Label>{t("preferenceCategory")}</Label>
-                <select
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={prefCategory}
-                  onChange={(event) =>
-                    setPrefCategory(
-                      event.target.value as (typeof preferenceCategories)[number],
-                    )
-                  }
-                >
-                  {preferenceCategories.map((category) => (
-                    <option key={category} value={category}>
-                      {t(`categories.${category}`)}
-                    </option>
-                  ))}
-                </select>
+            {preferences.length > 0 ? (
+              <FilterableItemsList
+                items={preferences}
+                emptyMessage={t("noPreferences")}
+                noResultsMessage={t("noFilterResults")}
+                viewAllLabel={(count) => t("viewAllPreferences", { count })}
+                viewLessLabel={t("viewLess")}
+                searchPlaceholder={t("searchPreferences")}
+                previewLayout={isPanel ? "list" : "grid"}
+                getSearchText={(preference) =>
+                  `${preference.label} ${preference.value}`
+                }
+                categoryFilter={{
+                  getCategory: (preference) =>
+                    getPreferenceCategoryFilterKey(
+                      preference.category,
+                      preference.customCategoryId,
+                    ),
+                  allLabel: t("filterAll"),
+                  categories: categoryOptions,
+                }}
+                filteredCountLabel={(count, total) =>
+                  t("filteredCount", { count, total })
+                }
+                renderItem={(preference, context) => (
+                  <div
+                    className={
+                      context === "preview"
+                        ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
+                        : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
+                    }
+                  >
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        {getCategoryLabel(
+                          preference.category,
+                          preference.customCategoryId,
+                        )}
+                      </p>
+                      <p className="font-medium">{preference.label}</p>
+                      <p
+                        className={
+                          context === "preview"
+                            ? "truncate text-sm text-muted-foreground"
+                            : "text-sm text-muted-foreground"
+                        }
+                      >
+                        {preference.value}
+                      </p>
+                    </div>
+                    {context === "full" ? (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => removePreference(preference.id)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    ) : null}
+                  </div>
+                )}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("noPreferences")}</p>
+            )}
+
+            <div className="space-y-3 rounded-xl border border-dashed border-border/60 bg-muted/10 p-4">
+              <p className="text-sm font-medium">{t("addPreference")}</p>
+              <div
+                className={cn(
+                  "grid gap-3",
+                  isPanel ? "grid-cols-1" : "sm:grid-cols-2",
+                )}
+              >
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="preference-category">{t("preferenceCategory")}</Label>
+                  <FormSelect
+                    id="preference-category"
+                    value={prefCategory}
+                    onValueChange={setPrefCategory}
+                    options={categoryOptions}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preference-label">{t("preferenceLabel")}</Label>
+                  <Input
+                    id="preference-label"
+                    value={prefLabel}
+                    onChange={(event) => setPrefLabel(event.target.value)}
+                    placeholder={t("preferenceLabelPlaceholder")}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="preference-value">{t("preferenceValue")}</Label>
+                  <Input
+                    id="preference-value"
+                    value={prefValue}
+                    onChange={(event) => setPrefValue(event.target.value)}
+                    placeholder={t("preferenceValuePlaceholder")}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>{t("preferenceLabel")}</Label>
-                <Input
-                  value={prefLabel}
-                  onChange={(event) => setPrefLabel(event.target.value)}
-                  placeholder={t("preferenceLabelPlaceholder")}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("preferenceValue")}</Label>
-                <Input
-                  value={prefValue}
-                  onChange={(event) => setPrefValue(event.target.value)}
-                  placeholder={t("preferenceValuePlaceholder")}
-                />
-              </div>
-            </div>
-            <FormActions>
               <Button
+                className={cn(isPanel && "w-full")}
                 variant="secondary"
                 onClick={addPreference}
                 disabled={isPending || !prefLabel.trim() || !prefValue.trim()}
               >
                 {t("addPreference")}
               </Button>
-            </FormActions>
-            <FilterableItemsList
-              items={preferences}
-              emptyMessage={t("noPreferences")}
-              noResultsMessage={t("noFilterResults")}
-              viewAllLabel={(count) => t("viewAllPreferences", { count })}
-              viewLessLabel={t("viewLess")}
-              searchPlaceholder={t("searchPreferences")}
-              getSearchText={(preference) =>
-                `${preference.label} ${preference.value}`
-              }
-              categoryFilter={{
-                getCategory: (preference) => preference.category,
-                allLabel: t("filterAll"),
-                categories: preferenceCategories.map((category) => ({
-                  value: category,
-                  label: t(`categories.${category}`),
-                })),
-              }}
-              filteredCountLabel={(count, total) =>
-                t("filteredCount", { count, total })
-              }
-              renderItem={(preference, context) => (
-                <div
-                  className={
-                    context === "preview"
-                      ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
-                      : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
-                  }
-                >
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      {t(`categories.${preference.category}`)}
-                    </p>
-                    <p className="truncate font-medium">{preference.label}</p>
-                    <p
-                      className={
-                        context === "preview"
-                          ? "truncate text-sm text-muted-foreground"
-                          : "text-sm text-muted-foreground"
-                      }
-                    >
-                      {preference.value}
-                    </p>
-                  </div>
-                  {context === "full" ? (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => removePreference(preference.id)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  ) : null}
-                </div>
-              )}
-            />
+            </div>
           </CardContent>
         </Card>
       </div>

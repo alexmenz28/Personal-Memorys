@@ -37,6 +37,7 @@ type EventFormProps = {
   footer?: React.ReactNode;
   /** Dialog modals use DialogFooter; panels use floating actions. */
   footerLayout?: "dialog" | "panel";
+  linkSelectedPeopleToProfile?: boolean;
 };
 
 const defaultValues: EventFormValues = {
@@ -78,6 +79,7 @@ export function EventForm({
   onSubmit,
   footer,
   footerLayout = "panel",
+  linkSelectedPeopleToProfile = false,
 }: EventFormProps) {
   const t = useTranslations("events");
   const resolvedInitial = resolveInitialValues(initialValues);
@@ -226,6 +228,7 @@ export function EventForm({
           people={people}
           selectedIds={personIds}
           onChange={setPersonIds}
+          linkSelectedToProfile={linkSelectedPeopleToProfile}
         />
         {error ? <p className="text-sm text-destructive">{error}</p> : null}
       </div>

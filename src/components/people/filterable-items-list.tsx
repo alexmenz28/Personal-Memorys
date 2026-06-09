@@ -29,6 +29,7 @@ type FilterableItemsListProps<T extends { id: string }> = {
     allLabel: string;
   };
   filteredCountLabel?: (count: number, total: number) => string;
+  previewLayout?: "grid" | "list";
   renderItem: (item: T, context: "preview" | "full") => React.ReactNode;
 };
 
@@ -42,6 +43,7 @@ export function FilterableItemsList<T extends { id: string }>({
   getSearchText,
   categoryFilter,
   filteredCountLabel,
+  previewLayout = "grid",
   renderItem,
 }: FilterableItemsListProps<T>) {
   const [expanded, setExpanded] = useState(false);
@@ -88,10 +90,14 @@ export function FilterableItemsList<T extends { id: string }>({
   return (
     <div className="space-y-3">
       {!expanded ? (
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div
+          className={cn(
+            previewLayout === "list" ? "space-y-2" : "grid gap-2 sm:grid-cols-3",
+          )}
+        >
           {previewItems.map((item) => (
             <div key={item.id} className="min-w-0">
-              {renderItem(item, "preview")}
+              {renderItem(item, previewLayout === "list" ? "full" : "preview")}
             </div>
           ))}
         </div>

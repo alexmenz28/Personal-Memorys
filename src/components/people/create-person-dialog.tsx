@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { FormSelect } from "@/components/ui/form-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,22 +116,19 @@ export function CreatePersonDialog({ onCreated }: CreatePersonDialogProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="person-relationship">{t("relationship")}</Label>
-            <select
+            <FormSelect
               id="person-relationship"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={relationship}
-              onChange={(event) =>
+              onValueChange={(nextValue) =>
                 setRelationship(
-                  event.target.value as (typeof relationshipTypes)[number],
+                  nextValue as (typeof relationshipTypes)[number],
                 )
               }
-            >
-              {relationshipTypes.map((type) => (
-                <option key={type} value={type}>
-                  {t(`relationships.${type}`)}
-                </option>
-              ))}
-            </select>
+              options={relationshipTypes.map((type) => ({
+                value: type,
+                label: t(`relationships.${type}`),
+              }))}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="person-notes">{t("generalNotes")}</Label>

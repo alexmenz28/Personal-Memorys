@@ -138,6 +138,7 @@ Module: `src/modules/reminders/`
 | `reminders/server/repository.ts` | Sync EMAIL reminders per event (multiple offsets); delivery log |
 | `reminders/server/delivery.service.ts` | Daily window: `today + daysBefore` in user timezone (date-only, no event hour) |
 | `reminders/server/email-templates.ts` | HTML templates en/es |
-| Inngest `send-daily-reminders` | Cron `0 8 * * *` UTC (~morning batch; dev `reminders:run` sends immediately) |
+| `UserProfile.reminderHour` | Preferred local hour (5–22, default 8) in Settings |
+| Inngest `send-daily-reminders` | Cron hourly (`0 * * * *`); sends when local hour matches profile; dev `reminders:run` ignores hour |
 
 Requires `RESEND_API_KEY` and `RESEND_FROM_EMAIL`. Without them, the job skips sends (dev-safe).

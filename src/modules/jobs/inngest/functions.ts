@@ -21,7 +21,7 @@ export const syncUserHolidays = inngest.createFunction(
 export const sendDailyReminders = inngest.createFunction(
   {
     id: "send-daily-reminders",
-    triggers: [{ cron: "0 8 * * *" }],
+    triggers: [{ cron: "0 * * * *" }],
   },
   async () => processDailyReminders(),
 );

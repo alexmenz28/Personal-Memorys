@@ -16,28 +16,19 @@ import {
 } from "@/modules/events/components/event-form";
 import { toReminderDaysBefore } from "@/modules/events/components/event-form.helpers";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
+import { serializeEvent } from "@/modules/calendar/types/calendar-items";
 import { createEvent } from "@/modules/events/actions/events.actions";
 import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
-type CreatedEvent = {
-  id: string;
-  title: string;
-  description: string | null;
-  date: Date | null;
-  isUndated: boolean;
-  isRecurring: boolean;
-  eventPeople: Array<{ person: { id: string; name: string } }>;
-};
-
 type CreateEventDialogProps = {
   defaultDate?: string;
   defaultUndated?: boolean;
   people?: PersonOption[];
   defaultPersonIds?: string[];
-  onCreated?: (event: CreatedEvent) => void;
+  onCreated?: (event: ReturnType<typeof serializeEvent>) => void;
 };
 
 export function CreateEventDialog({

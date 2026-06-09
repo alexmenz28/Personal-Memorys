@@ -66,8 +66,8 @@ Patrón UX documentado en `docs/ARCHITECTURE.md` (panel vs modal vs inline).
 
 | # | Tarea |
 |---|--------|
-| 5.1 | Exportar datos (JSON/CSV) |
-| 5.2 | Eliminar cuenta + borrado en cascada |
+| 5.1 | Exportar datos (JSON/CSV) | ✅ Hecho |
+| 5.2 | Eliminar cuenta + borrado en cascada | ✅ Hecho |
 | 5.3 | Webhook Clerk ya sincroniza usuarios — revisar edge cases |
 
 ---
@@ -143,7 +143,18 @@ Repetir en **desktop** y **móvil** tras cada cambio relevante.
 
 ---
 
+## Fase 5.5 — Eventos + personas ✅ Cerrada
+
+| # | Tarea | Estado |
+|---|--------|--------|
+| A | Enlaces desde evento al perfil de persona (`/people?person=`) | ✅ Hecho |
+| B | Registro “¿Qué hicieron?” en evento (`EventNote` con categoría, label, value) | ✅ Hecho |
+| C | Categorías de preferencias personalizables en Ajustes | ✅ Hecho |
+
+---
+
 ## Orden recomendado para las próximas sesiones
 
-1. **Fase 5** — exportar datos y eliminar cuenta
+1. **Fase 5.3** — edge cases webhook Clerk
+2. **Lint** — reglas `react-hooks/*` y avisos pendientes
 3. **Fase 6** — monetización y v2

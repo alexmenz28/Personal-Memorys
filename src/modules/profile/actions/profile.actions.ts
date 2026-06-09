@@ -1,7 +1,10 @@
 "use server";
 
 import { revalidateUserProfileCache } from "@/modules/auth/server/cached-profile";
-import { requireCurrentUserProfile, resolveUserProfile } from "@/modules/auth/server/session";
+import {
+  requireCurrentUserProfile,
+  resolveUserProfile,
+} from "@/modules/auth/server/session";
 import { profileService } from "@/modules/profile/server/service";
 import type { UpdateProfileInput } from "@/modules/profile/schemas/profile.schema";
 import type { ThemePreference } from "@/shared/lib/theme";
@@ -26,17 +29,30 @@ export async function completeOnboarding(input: UpdateProfileInput) {
 export async function updateProfileSettings(input: UpdateProfileInput) {
   return runAction(async () => {
     const profile = await requireCurrentUserProfile();
+    const previousCountryCode = profile.countryCode;
+    const previousLocale = profile.locale;
+    const previousTimezone = profile.timezone;
 
     await profileService.updateSettings(
       profile.id,
       input,
-      profile.countryCode,
+      previousCountryCode,
     );
 
     revalidateUserProfileCache(profile.clerkUserId);
-    updateTag(`holidays-${input.countryCode}`);
-    revalidatePath("/settings");
-    revalidatePath("/today");
+
+    if (input.countryCode !== previousCountryCode) {
+      updateTag(`holidays-${input.countryCode}`);
+      revalidatePath("/today");
+      revalidatePath("/upcoming");
+    } else if (input.timezone !== previousTimezone) {
+      revalidatePath("/today");
+      revalidatePath("/upcoming");
+    }
+
+    return {
+      localeChanged: input.locale !== previousLocale,
+    };
   });
 }
 
@@ -45,6 +61,13 @@ export async function updateProfileTheme(theme: ThemePreference) {
     const profile = await requireCurrentUserProfile();
     await profileService.updateTheme(profile.id, theme);
     revalidateUserProfileCache(profile.clerkUserId);
-    revalidatePath("/settings");
+  });
+}
+
+export async function deleteAccount() {
+  return runAction(async () => {
+    const profile = await requireCurrentUserProfile();
+    await profileService.deleteAccount(profile.id, profile.clerkUserId);
+    revalidateUserProfileCache(profile.clerkUserId);
   });
 }

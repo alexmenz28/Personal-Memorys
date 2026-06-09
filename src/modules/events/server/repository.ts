@@ -21,14 +21,24 @@ const eventPeopleInclude = {
 const remindersInclude = {
   reminders: {
     where: { channel: "EMAIL" as const, isActive: true },
-    take: 1,
     select: { daysBefore: true },
+    orderBy: { daysBefore: "desc" as const },
+  },
+} as const;
+
+const eventNotesInclude = {
+  eventNotes: {
+    include: {
+      person: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" as const },
   },
 } as const;
 
 const defaultEventInclude = {
   ...eventPeopleInclude,
   ...remindersInclude,
+  ...eventNotesInclude,
 } as const;
 
 export const eventsRepository = {
@@ -101,6 +111,7 @@ export const eventsRepository = {
             },
           },
         },
+        ...eventNotesInclude,
       },
       orderBy: { createdAt: "desc" },
     });

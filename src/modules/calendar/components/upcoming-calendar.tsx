@@ -3,6 +3,7 @@
 import { CalendarDayCell } from "@/modules/calendar/components/calendar-day-cell";
 import { CalendarDayDetail } from "@/modules/calendar/components/calendar-day-detail";
 import { Button } from "@/components/ui/button";
+import { FormSelect } from "@/components/ui/form-select";
 import { EventPanelContent } from "@/modules/events/components/event-panel-content";
 import type { EventMutationResult } from "@/modules/events/components/event-panel-content";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
@@ -135,40 +136,38 @@ export function UpcomingCalendar({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <select
-              className="h-9 rounded-lg border border-input bg-background px-2 text-sm capitalize"
-              value={month.month}
-              onChange={(event) =>
-                setMonth((current) => ({
-                  ...current,
-                  month: Number(event.target.value),
-                }))
-              }
+            <FormSelect
               aria-label={t("selectMonth")}
-            >
-              {monthOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
-              className="h-9 rounded-lg border border-input bg-background px-2 text-sm"
-              value={month.year}
-              onChange={(event) =>
+              value={String(month.month)}
+              onValueChange={(nextValue) =>
                 setMonth((current) => ({
                   ...current,
-                  year: Number(event.target.value),
+                  month: Number(nextValue),
                 }))
               }
+              options={monthOptions.map((option) => ({
+                value: String(option.value),
+                label: option.label,
+              }))}
+              size="sm"
+              triggerClassName="capitalize"
+            />
+            <FormSelect
               aria-label={t("selectYear")}
-            >
-              {yearOptions.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+              value={String(month.year)}
+              onValueChange={(nextValue) =>
+                setMonth((current) => ({
+                  ...current,
+                  year: Number(nextValue),
+                }))
+              }
+              options={yearOptions.map((year) => ({
+                value: String(year),
+                label: String(year),
+              }))}
+              size="sm"
+              triggerClassName="w-auto min-w-20"
+            />
           </div>
 
           <Button type="button" variant="outline" size="sm" onClick={goToToday}>
@@ -221,6 +220,7 @@ export function UpcomingCalendar({
             mode="edit"
             event={selectedEvent}
             people={people}
+            today={today}
             showBack
             onBack={backToDay}
             onSuccess={backToDay}

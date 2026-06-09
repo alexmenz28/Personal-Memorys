@@ -7,10 +7,18 @@ import {
   deleteEventSchema,
   updateEventSchema,
 } from "@/modules/events/schemas/event.schema";
+import { eventNotesRepository } from "@/modules/events/server/event-notes.repository";
 import { eventsRepository } from "@/modules/events/server/repository";
 import { peopleRepository } from "@/modules/people/server/repository";
+import {
+  createEventNoteFromPreferenceSchema,
+  createEventNoteSchema,
+} from "@/modules/events/schemas/event-note.schema";
+import {
+  serializeEvent,
+  serializeEventNote,
+} from "@/modules/calendar/types/calendar-items";
 import { runAction } from "@/shared/server/action-utils";
-import { revalidatePath } from "next/cache";
 
 export async function createEvent(input: unknown) {
   return runAction(async () => {
@@ -31,11 +39,8 @@ export async function createEvent(input: unknown) {
     const event = await eventsRepository.create(profile.id, data);
 
     revalidateEventsCache(profile.id);
-    revalidatePath("/today");
-    revalidatePath("/upcoming");
-    revalidatePath("/undated");
 
-    return event;
+    return serializeEvent(event);
   });
 }
 
@@ -67,11 +72,47 @@ export async function updateEvent(input: unknown) {
     const event = await eventsRepository.update(profile.id, data);
 
     revalidateEventsCache(profile.id);
-    revalidatePath("/today");
-    revalidatePath("/upcoming");
-    revalidatePath("/undated");
 
-    return event;
+    return serializeEvent(event);
+  });
+}
+
+export async function createEventNoteFromPreference(input: unknown) {
+  return runAction(async () => {
+    const profile = await requireCurrentUserProfile();
+    const data = createEventNoteFromPreferenceSchema.parse(input);
+
+    const note = await eventNotesRepository.createFromPreference(
+      profile.id,
+      data,
+    );
+
+    revalidateEventsCache(profile.id);
+
+    return serializeEventNote(note);
+  });
+}
+
+export async function createEventNote(input: unknown) {
+  return runAction(async () => {
+    const profile = await requireCurrentUserProfile();
+    const data = createEventNoteSchema.parse(input);
+
+    const note = await eventNotesRepository.createForEvent(profile.id, data);
+
+    revalidateEventsCache(profile.id);
+
+    return serializeEventNote(note);
+  });
+}
+
+export async function deleteEventNote(noteId: string, eventId: string) {
+  return runAction(async () => {
+    const profile = await requireCurrentUserProfile();
+
+    await eventNotesRepository.deleteForEvent(noteId, eventId, profile.id);
+
+    revalidateEventsCache(profile.id);
   });
 }
 
@@ -92,9 +133,6 @@ export async function deleteEvent(input: unknown) {
     await eventsRepository.delete(id, profile.id);
 
     revalidateEventsCache(profile.id);
-    revalidatePath("/today");
-    revalidatePath("/upcoming");
-    revalidatePath("/undated");
 
     return { id };
   });

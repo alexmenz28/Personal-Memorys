@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 type UndatedPageClientProps = {
   title: string;
   subtitle: string;
+  today: string;
   events: SerializedEvent[];
   people: PersonOption[];
 };
@@ -26,6 +27,7 @@ type UndatedPageClientProps = {
 export function UndatedPageClient({
   title,
   subtitle,
+  today,
   events: initialEvents,
   people,
 }: UndatedPageClientProps) {
@@ -89,6 +91,7 @@ export function UndatedPageClient({
         mode="edit"
         event={selectedEvent}
         people={people}
+        today={today}
         onClose={() => setSelectedEvent(null)}
         onUpdated={handleEventUpdated}
         onDeleted={handleEventDeleted}

@@ -28,6 +28,12 @@ export const profileRepository = {
     });
   },
 
+  deleteById(id: string) {
+    return db.userProfile.delete({
+      where: { id },
+    });
+  },
+
   update(
     id: string,
     data: {
@@ -36,6 +42,7 @@ export const profileRepository = {
       countryCode?: string;
       regionCode?: string | null;
       theme?: ThemePreference;
+      reminderHour?: number;
       onboardingCompleted?: boolean;
     },
   ) {

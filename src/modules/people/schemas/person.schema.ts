@@ -1,3 +1,8 @@
+import {
+  BUILTIN_PREFERENCE_CATEGORIES,
+  CUSTOM_CATEGORY_PREFIX,
+  isBuiltinPreferenceCategory,
+} from "@/modules/people/lib/preference-categories";
 import { z } from "zod";
 
 export const relationshipTypes = [
@@ -8,13 +13,17 @@ export const relationshipTypes = [
   "OTHER",
 ] as const;
 
-export const preferenceCategories = [
-  "FOOD",
-  "RESTAURANT",
-  "GIFT",
-  "PLACE",
-  "OTHER",
-] as const;
+export const preferenceCategories = BUILTIN_PREFERENCE_CATEGORIES;
+
+const preferenceCategoryRefSchema = z
+  .string()
+  .min(1)
+  .refine(
+    (value) =>
+      isBuiltinPreferenceCategory(value) ||
+      value.startsWith(CUSTOM_CATEGORY_PREFIX),
+    { message: "Invalid preference category" },
+  );
 
 export const createPersonSchema = z.object({
   name: z.string().min(1).max(120),
@@ -26,7 +35,7 @@ export const updatePersonSchema = createPersonSchema;
 
 export const createPreferenceSchema = z.object({
   personId: z.string().min(1),
-  category: z.enum(preferenceCategories),
+  categoryRef: preferenceCategoryRefSchema,
   label: z.string().min(1).max(120),
   value: z.string().min(1).max(500),
 });

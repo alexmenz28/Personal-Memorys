@@ -13,6 +13,17 @@ export type CalendarDayItem = {
   isRecurring?: boolean;
 };
 
+export type SerializedEventNote = {
+  id: string;
+  personId: string | null;
+  preferenceId: string | null;
+  category: string;
+  customCategoryId: string | null;
+  label: string;
+  value: string;
+  person: { id: string; name: string } | null;
+};
+
 export type SerializedEvent = {
   id: string;
   title: string;
@@ -25,6 +36,7 @@ export type SerializedEvent = {
   isRecurring: boolean;
   reminderDaysBefore: number[];
   eventPeople: Array<{ person: { id: string; name: string } }>;
+  eventNotes: SerializedEventNote[];
 };
 
 export type SerializedHoliday = {
@@ -146,6 +158,28 @@ function toDateOnlyString(value: Date | string) {
   return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
 }
 
+export function serializeEventNote(note: {
+  id: string;
+  personId: string | null;
+  preferenceId?: string | null;
+  category: string;
+  customCategoryId?: string | null;
+  label: string;
+  value: string;
+  person: { id: string; name: string } | null;
+}): SerializedEventNote {
+  return {
+    id: note.id,
+    personId: note.personId,
+    preferenceId: note.preferenceId ?? null,
+    category: note.category,
+    customCategoryId: note.customCategoryId ?? null,
+    label: note.label,
+    value: note.value,
+    person: note.person,
+  };
+}
+
 export function serializeEvent(event: {
   id: string;
   title: string;
@@ -156,6 +190,16 @@ export function serializeEvent(event: {
   isRecurring?: boolean;
   reminders?: Array<{ daysBefore: number }>;
   eventPeople: Array<{ person: { id: string; name: string } }>;
+  eventNotes?: Array<{
+    id: string;
+    personId: string | null;
+    preferenceId?: string | null;
+    category: string;
+    customCategoryId?: string | null;
+    label: string;
+    value: string;
+    person: { id: string; name: string } | null;
+  }>;
 }): SerializedEvent {
   return {
     id: event.id,
@@ -172,5 +216,6 @@ export function serializeEvent(event: {
         ?.map((reminder) => reminder.daysBefore)
         .sort((left, right) => left - right) ?? [],
     eventPeople: event.eventPeople,
+    eventNotes: event.eventNotes?.map((note) => serializeEventNote(note)) ?? [],
   };
 }

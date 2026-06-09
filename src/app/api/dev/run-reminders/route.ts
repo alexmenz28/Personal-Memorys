@@ -6,7 +6,7 @@ export async function GET() {
     return Response.json({ error: "Not available" }, { status: 403 });
   }
 
-  const result = await processDailyReminders();
+  const result = await processDailyReminders({ ignoreHour: true });
 
   return Response.json(result);
 }

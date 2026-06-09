@@ -11,6 +11,7 @@ import {
   toReminderDaysBefore,
 } from "@/modules/events/components/event-form.helpers";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
+import { EventActivitySection } from "@/modules/events/components/event-activity-section";
 import {
   createEvent,
   deleteEvent,
@@ -24,20 +25,22 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 
-export type EventMutationResult = {
-  id: string;
-  title: string;
-  description: string | null;
-  date: Date | null;
-  isUndated: boolean;
-  isRecurring: boolean;
-  eventPeople: Array<{ person: { id: string; name: string } }>;
-};
+export type EventMutationResult = Pick<
+  SerializedEvent,
+  | "id"
+  | "title"
+  | "description"
+  | "date"
+  | "isUndated"
+  | "isRecurring"
+  | "eventPeople"
+>;
 
 type EventPanelContentProps = {
   mode: "create" | "edit";
   event?: SerializedEvent | null;
   people: PersonOption[];
+  today: string;
   defaultDate?: string;
   defaultUndated?: boolean;
   defaultPersonIds?: string[];
@@ -80,6 +83,7 @@ export function EventPanelContent({
   mode,
   event,
   people,
+  today,
   defaultDate,
   defaultUndated = false,
   defaultPersonIds = [],
@@ -287,6 +291,7 @@ export function EventPanelContent({
           error={error}
           onSubmit={handleSubmit}
           footerLayout="panel"
+          linkSelectedPeopleToProfile={mode === "edit"}
           footer={
             mode === "edit" ? (
               <Button
@@ -301,6 +306,17 @@ export function EventPanelContent({
             ) : undefined
           }
         />
+        {mode === "edit" && event ? (
+          <EventActivitySection
+            key={`${event.id}-${event.eventPeople.map(({ person }) => person.id).join(",")}`}
+            eventId={event.id}
+            eventDate={event.occurrenceDate ?? event.date}
+            isUndated={event.isUndated}
+            today={today}
+            linkedPeople={event.eventPeople.map(({ person }) => person)}
+            initialNotes={event.eventNotes}
+          />
+        ) : null}
       </div>
 
       <ConfirmDialog

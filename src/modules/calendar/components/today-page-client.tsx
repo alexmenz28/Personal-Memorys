@@ -8,6 +8,13 @@ import {
   mergeTodayEvent,
 } from "@/modules/calendar/components/today-view-client";
 import {
+  mergeCalendarEventSummary,
+  removeCalendarEventSummary,
+  replaceCalendarEventSummary,
+  serializeDatedEventSummary,
+  type DatedEventSummary,
+} from "@/modules/calendar/lib/dated-event-summary";
+import {
   removeCalendarEvent,
   replaceCalendarEvent,
   serializeEvent,
@@ -25,6 +32,7 @@ type TodayPageClientProps = {
   locale: string;
   holidays: SerializedHoliday[];
   events: SerializedEvent[];
+  allDatedEvents: DatedEventSummary[];
   people: PersonOption[];
 };
 
@@ -35,21 +43,65 @@ export function TodayPageClient({
   locale,
   holidays,
   events: initialEvents,
+  allDatedEvents: initialAllDatedEvents,
   people,
 }: TodayPageClientProps) {
   const [events, setEvents] = useState(initialEvents);
+  const [allDatedEvents, setAllDatedEvents] = useState(initialAllDatedEvents);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedOccurrenceDate, setSelectedOccurrenceDate] = useState<
+    string | null
+  >(null);
 
-  const selectedEvent = useMemo(
-    () => events.find((event) => event.id === selectedEventId) ?? null,
-    [events, selectedEventId],
-  );
+  const selectedEvent = useMemo(() => {
+    if (!selectedEventId) {
+      return null;
+    }
+
+    const fromToday = events.find((event) => event.id === selectedEventId);
+
+    if (fromToday) {
+      return fromToday;
+    }
+
+    const summary = allDatedEvents.find((event) => event.id === selectedEventId);
+
+    if (!summary) {
+      return null;
+    }
+
+    return serializeEvent({
+      id: summary.id,
+      title: summary.title,
+      description: null,
+      date: summary.date,
+      occurrenceDate: selectedOccurrenceDate ?? summary.date,
+      isUndated: summary.isUndated,
+      isRecurring: summary.isRecurring,
+      eventPeople: summary.eventPeople,
+      eventNotes: [],
+    });
+  }, [allDatedEvents, events, selectedEventId, selectedOccurrenceDate]);
+
+  const openEvent = useCallback((eventId: string, occurrenceDate: string) => {
+    setSelectedEventId(eventId);
+    setSelectedOccurrenceDate(occurrenceDate);
+  }, []);
+
+  const closeEvent = useCallback(() => {
+    setSelectedEventId(null);
+    setSelectedOccurrenceDate(null);
+  }, []);
 
   const handleEventCreated = useCallback(
     (created: Parameters<typeof serializeEvent>[0]) => {
+      const serialized = serializeEvent(created);
+      const summary = serializeDatedEventSummary(created);
+
       setEvents((current) =>
-        mergeTodayEvent(current, serializeEvent(created), today),
+        mergeTodayEvent(current, serialized, today),
       );
+      setAllDatedEvents((current) => mergeCalendarEventSummary(current, summary));
     },
     [today],
   );
@@ -74,15 +126,19 @@ export function TodayPageClient({
 
         return replaceCalendarEvent(current, nextEvent);
       });
-      setSelectedEventId(null);
+      setAllDatedEvents((current) =>
+        replaceCalendarEventSummary(current, serializeDatedEventSummary(updated)),
+      );
+      closeEvent();
     },
-    [today],
+    [closeEvent, today],
   );
 
   const handleEventDeleted = useCallback((eventId: string) => {
     setEvents((current) => removeCalendarEvent(current, eventId));
-    setSelectedEventId(null);
-  }, []);
+    setAllDatedEvents((current) => removeCalendarEventSummary(current, eventId));
+    closeEvent();
+  }, [closeEvent]);
 
   return (
     <AppPage
@@ -101,7 +157,12 @@ export function TodayPageClient({
         locale={locale}
         holidays={holidays}
         events={events}
-        onEventClick={setSelectedEventId}
+        allDatedEvents={allDatedEvents}
+        people={people.map((person) => ({
+          id: person.id,
+          name: person.name,
+        }))}
+        onEventClick={openEvent}
       />
 
       <EventSlidePanel
@@ -109,7 +170,8 @@ export function TodayPageClient({
         mode="edit"
         event={selectedEvent}
         people={people}
-        onClose={() => setSelectedEventId(null)}
+        today={today}
+        onClose={closeEvent}
         onUpdated={handleEventUpdated}
         onDeleted={handleEventDeleted}
       />

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/shared/lib/utils";
 import { Search, X } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -21,12 +22,14 @@ type EventPersonPickerProps = {
   people: PersonOption[];
   selectedIds: string[];
   onChange: (personIds: string[]) => void;
+  linkSelectedToProfile?: boolean;
 };
 
 export function EventPersonPicker({
   people,
   selectedIds,
   onChange,
+  linkSelectedToProfile = false,
 }: EventPersonPickerProps) {
   const t = useTranslations("events");
   const [query, setQuery] = useState("");
@@ -88,7 +91,16 @@ export function EventPersonPicker({
         <div className="flex flex-wrap gap-1.5">
           {selectedPeople.map((person) => (
             <Badge key={person.id} variant="secondary" className="gap-1 pr-1">
-              {person.name}
+              {linkSelectedToProfile ? (
+                <Link
+                  href={`/people?person=${person.id}`}
+                  className="hover:underline"
+                >
+                  {person.name}
+                </Link>
+              ) : (
+                person.name
+              )}
               <button
                 type="button"
                 onClick={() => removePerson(person.id)}

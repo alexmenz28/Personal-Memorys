@@ -7,11 +7,13 @@ import { fetchPersonDetail } from "@/modules/people/actions/people.actions";
 import { PersonSlidePanel } from "@/modules/people/components/person-slide-panel";
 import { EventSlidePanel } from "@/modules/events/components/event-slide-panel";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
+import type { CustomPreferenceCategory } from "@/modules/people/lib/preference-categories";
 import { toIsoString } from "@/shared/lib/dates";
 import { PersonDetailSkeleton } from "@/shared/components/layout/content-skeleton";
 import { PageActions, SetPageChrome } from "@/shared/components/layout/page-chrome";
+import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type PersonListItem = {
   id: string;
@@ -33,6 +35,7 @@ type SelectedPerson = {
   preferences: Array<{
     id: string;
     category: string;
+    customCategoryId: string | null;
     label: string;
     value: string;
   }>;
@@ -45,6 +48,8 @@ type PeopleWithPanelProps = {
   initialSelectedPersonId: string | null;
   listTitle: string;
   listSubtitle: string;
+  today: string;
+  customPreferenceCategories: CustomPreferenceCategory[];
 };
 
 function buildPersonUrl(personId: string | null) {
@@ -57,13 +62,11 @@ export function PeopleWithPanel({
   initialSelectedPersonId,
   listTitle,
   listSubtitle,
+  today,
+  customPreferenceCategories,
 }: PeopleWithPanelProps) {
+  const t = useTranslations("people");
   const [people, setPeople] = useState(initialPeople);
-
-  useEffect(() => {
-    setPeople(initialPeople);
-  }, [initialPeople]);
-
   const [panelPersonId, setPanelPersonId] = useState<string | null>(
     initialSelectedPersonId,
   );
@@ -71,50 +74,123 @@ export function PeopleWithPanel({
     initialSelectedPerson,
   );
   const [panelLoading, setPanelLoading] = useState(false);
+  const [panelError, setPanelError] = useState<string | null>(null);
   const [eventPanelOpen, setEventPanelOpen] = useState(false);
   const [eventPersonIds, setEventPersonIds] = useState<string[]>([]);
+  const fetchRequestRef = useRef(0);
+  const loadErrorMessageRef = useRef(t("loadError"));
 
-  const personOptions = useMemo<PersonOption[]>(
-    () =>
-      people.map((person) => ({
-        id: person.id,
-        name: person.name,
-        createdAt: toIsoString(person.createdAt),
-      })),
-    [people],
-  );
+  useEffect(() => {
+    loadErrorMessageRef.current = t("loadError");
+  }, [t]);
+
+  useEffect(() => {
+    setPeople(initialPeople);
+  }, [initialPeople]);
 
   const syncUrl = useCallback((personId: string | null) => {
     window.history.replaceState(null, "", buildPersonUrl(personId));
   }, []);
 
   const loadPerson = useCallback(async (personId: string) => {
-    setPanelLoading(true);
-    const result = await fetchPersonDetail(personId);
+    const requestId = fetchRequestRef.current + 1;
+    fetchRequestRef.current = requestId;
 
-    if (result.ok) {
-      setPanelPerson(result.data);
+    setPanelLoading(true);
+    setPanelError(null);
+
+    try {
+      const result = await fetchPersonDetail(personId);
+
+      if (requestId !== fetchRequestRef.current) {
+        return;
+      }
+
+      if (result.ok) {
+        setPanelPerson(result.data);
+        setPanelError(null);
+      } else {
+        setPanelPerson(null);
+        setPanelError(result.error);
+      }
+    } catch {
+      if (requestId !== fetchRequestRef.current) {
+        return;
+      }
+
+      setPanelPerson(null);
+      setPanelError(loadErrorMessageRef.current);
+    } finally {
+      if (requestId === fetchRequestRef.current) {
+        setPanelLoading(false);
+      }
+    }
+  }, []);
+
+  const loadPersonRef = useRef(loadPerson);
+  loadPersonRef.current = loadPerson;
+
+  // Sync only on server-driven navigation (?person= in URL from RSC).
+  // Do not reset panel when initialSelectedPersonId is null — that would
+  // wipe a client-side selection when this effect re-runs.
+  useEffect(() => {
+    if (!initialSelectedPersonId) {
+      return;
     }
 
-    setPanelLoading(false);
-  }, []);
+    setPanelPersonId(initialSelectedPersonId);
+
+    if (
+      initialSelectedPerson &&
+      initialSelectedPerson.id === initialSelectedPersonId
+    ) {
+      setPanelPerson(initialSelectedPerson);
+      setPanelLoading(false);
+      setPanelError(null);
+      return;
+    }
+
+    void loadPersonRef.current(initialSelectedPersonId);
+  }, [initialSelectedPerson, initialSelectedPersonId]);
 
   const openPerson = useCallback(
     (personId: string) => {
       setPanelPersonId(personId);
       syncUrl(personId);
 
-      if (panelPerson?.id !== personId) {
-        setPanelPerson(null);
-        void loadPerson(personId);
+      if (
+        panelPerson?.id === personId &&
+        !panelError
+      ) {
+        return;
       }
+
+      if (
+        initialSelectedPerson?.id === personId &&
+        initialSelectedPersonId === personId
+      ) {
+        setPanelPerson(initialSelectedPerson);
+        setPanelLoading(false);
+        setPanelError(null);
+        return;
+      }
+
+      void loadPerson(personId);
     },
-    [loadPerson, panelPerson?.id, syncUrl],
+    [
+      initialSelectedPerson,
+      initialSelectedPersonId,
+      loadPerson,
+      panelError,
+      panelPerson?.id,
+      syncUrl,
+    ],
   );
 
   const handlePersonUpdated = useCallback(
     (updatedPerson: SelectedPerson) => {
       setPanelPerson(updatedPerson);
+      setPanelError(null);
       setPeople((current) =>
         current.map((person) =>
           person.id === updatedPerson.id
@@ -134,9 +210,11 @@ export function PeopleWithPanel({
   );
 
   const closePanel = useCallback(() => {
+    fetchRequestRef.current += 1;
     setPanelPersonId(null);
     setPanelPerson(null);
     setPanelLoading(false);
+    setPanelError(null);
     syncUrl(null);
   }, [syncUrl]);
 
@@ -176,6 +254,7 @@ export function PeopleWithPanel({
         personNotes: [],
       });
       setPanelLoading(false);
+      setPanelError(null);
       syncUrl(created.id);
     },
     [syncUrl],
@@ -197,20 +276,17 @@ export function PeopleWithPanel({
       const personId = params.get("person");
 
       if (!personId) {
-        setPanelPersonId(null);
-        setPanelPerson(null);
-        setPanelLoading(false);
+        closePanel();
         return;
       }
 
       setPanelPersonId(personId);
-      setPanelPerson(null);
-      void loadPerson(personId);
+      void loadPersonRef.current(personId);
     }
 
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
-  }, [loadPerson]);
+  }, [closePanel]);
 
   const openCreateEventForPerson = useCallback((personId: string) => {
     setEventPersonIds([personId]);
@@ -221,6 +297,12 @@ export function PeopleWithPanel({
     setEventPanelOpen(false);
     setEventPersonIds([]);
   }, []);
+
+  const personOptions: PersonOption[] = people.map((person) => ({
+    id: person.id,
+    name: person.name,
+    createdAt: toIsoString(person.createdAt),
+  }));
 
   return (
     <>
@@ -238,16 +320,32 @@ export function PeopleWithPanel({
       />
 
       <PersonSlidePanel open={Boolean(panelPersonId)} onClose={closePanel}>
-        {panelLoading || !panelPerson ? (
+        {panelLoading ? (
           <PersonDetailSkeleton />
-        ) : (
+        ) : panelError ? (
+          <div className="space-y-4 p-2">
+            <p className="text-sm text-destructive">{panelError}</p>
+            {panelPersonId ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => void loadPerson(panelPersonId)}
+              >
+                {t("retryLoad")}
+              </Button>
+            ) : null}
+          </div>
+        ) : panelPerson ? (
           <PersonDetail
             person={panelPerson}
             variant="panel"
+            customPreferenceCategories={customPreferenceCategories}
             onDeleted={() => handlePersonDeleted(panelPerson.id)}
             onPersonUpdated={handlePersonUpdated}
             onCreateEvent={openCreateEventForPerson}
           />
+        ) : (
+          <PersonDetailSkeleton />
         )}
       </PersonSlidePanel>
 
@@ -255,6 +353,7 @@ export function PeopleWithPanel({
         open={eventPanelOpen}
         mode="create"
         people={personOptions}
+        today={today}
         defaultPersonIds={eventPersonIds}
         stacked={Boolean(panelPersonId)}
         onClose={closeEventPanel}

@@ -5,6 +5,26 @@ export function getDateStringInTimezone(
   return new Intl.DateTimeFormat("en-CA", { timeZone: timezone }).format(date);
 }
 
+export function getHourInTimezone(timezone: string, date = new Date()) {
+  const hour = new Intl.DateTimeFormat("en-GB", {
+    timeZone: timezone,
+    hour: "2-digit",
+    hour12: false,
+  }).format(date);
+
+  return Number(hour);
+}
+
+export function formatHourLabel(hour: number, locale: string) {
+  const date = new Date(Date.UTC(2024, 0, 1, hour, 0, 0));
+
+  return new Intl.DateTimeFormat(locale, {
+    timeZone: "UTC",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
+
 export function parseDateOnly(value: string) {
   return new Date(`${value}T00:00:00.000Z`);
 }

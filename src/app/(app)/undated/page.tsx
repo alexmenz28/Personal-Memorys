@@ -3,7 +3,7 @@ import { serializeEvent } from "@/modules/calendar/types/calendar-items";
 import { getCachedUndatedEvents } from "@/modules/events/server/cached-queries";
 import { requireCurrentUserProfile } from "@/modules/auth/server/session";
 import { getCachedPeopleList } from "@/modules/people/server/cached-queries";
-import { toIsoString } from "@/shared/lib/dates";
+import { getDateStringInTimezone, toIsoString } from "@/shared/lib/dates";
 import { getTranslations } from "next-intl/server";
 
 export default async function UndatedPage() {
@@ -18,6 +18,7 @@ export default async function UndatedPage() {
     <UndatedPageClient
       title={t("title")}
       subtitle={t("subtitle")}
+      today={getDateStringInTimezone(profile.timezone)}
       events={events.map(serializeEvent)}
       people={people.map((person) => ({
         id: person.id,

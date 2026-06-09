@@ -91,6 +91,7 @@ export const remindersRepository = {
                 email: true,
                 locale: true,
                 timezone: true,
+                reminderHour: true,
               },
             },
           },

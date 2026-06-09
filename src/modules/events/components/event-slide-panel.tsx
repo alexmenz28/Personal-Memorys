@@ -11,6 +11,7 @@ type EventSlidePanelProps = {
   mode: "create" | "edit";
   event?: SerializedEvent | null;
   people: PersonOption[];
+  today: string;
   defaultDate?: string;
   defaultUndated?: boolean;
   defaultPersonIds?: string[];

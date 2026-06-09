@@ -4,8 +4,12 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 import { Pool } from "pg";
 
+/** Bump after `prisma generate` when the schema changes (new models/fields). */
+const PRISMA_CLIENT_REVISION = 2;
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaRevision: number | undefined;
   pgPool: Pool | undefined;
 };
 
@@ -34,8 +38,25 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient() {
+  const cached = globalForPrisma.prisma;
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
+  if (
+    cached &&
+    globalForPrisma.prismaRevision === PRISMA_CLIENT_REVISION &&
+    "userPreferenceCategory" in cached
+  ) {
+    return cached;
+  }
+
+  const client = createPrismaClient();
+
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+    globalForPrisma.prismaRevision = PRISMA_CLIENT_REVISION;
+  }
+
+  return client;
 }
+
+export const db = getPrismaClient();

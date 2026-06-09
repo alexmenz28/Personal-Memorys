@@ -6,9 +6,16 @@ import type {
 } from "@/generated/prisma/client";
 import type {
   CreatePersonInput,
-  CreatePreferenceInput,
   UpdatePersonInput,
 } from "@/modules/people/schemas/person.schema";
+
+export type CreatePreferenceData = {
+  personId: string;
+  category: string;
+  customCategoryId: string | null;
+  label: string;
+  value: string;
+};
 import { db } from "@/shared/server/db";
 
 export const peopleRepository = {
@@ -31,7 +38,12 @@ export const peopleRepository = {
     return db.person.findFirst({
       where: { id: personId, userProfileId },
       include: {
-        preferences: { orderBy: { createdAt: "desc" } },
+        preferences: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            customCategory: { select: { id: true, label: true } },
+          },
+        },
         personNotes: { orderBy: { createdAt: "desc" } },
       },
     });
@@ -77,13 +89,17 @@ export const peopleRepository = {
     });
   },
 
-  createPreference(data: CreatePreferenceInput) {
+  createPreference(data: CreatePreferenceData) {
     return db.preference.create({
       data: {
         personId: data.personId,
         category: data.category as PreferenceCategory,
+        customCategoryId: data.customCategoryId,
         label: data.label,
         value: data.value,
+      },
+      include: {
+        customCategory: { select: { id: true, label: true } },
       },
     });
   },

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { clerkClient } from "@clerk/nextjs/server";
 import { cookies } from "next/headers";
 import { syncHolidaysForCountry } from "@/modules/holidays/server/sync";
 import { inngest } from "@/modules/jobs/inngest/client";
@@ -76,5 +77,15 @@ export const profileService = {
 
   async updateTheme(profileId: string, theme: ThemePreference) {
     await profileRepository.update(profileId, { theme });
+  },
+
+  async deleteAccount(profileId: string, clerkUserId: string) {
+    await profileRepository.deleteById(profileId);
+
+    const cookieStore = await cookies();
+    cookieStore.delete("locale");
+
+    const client = await clerkClient();
+    await client.users.deleteUser(clerkUserId);
   },
 };
