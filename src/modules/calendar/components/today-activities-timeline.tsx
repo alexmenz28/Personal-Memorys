@@ -15,7 +15,7 @@ import type {
   SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { formatDateForDisplay } from "@/shared/lib/dates";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { ArrowDown, Repeat2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";

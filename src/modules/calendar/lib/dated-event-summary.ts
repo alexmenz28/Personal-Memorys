@@ -1,3 +1,5 @@
+import { toDateOnlyString } from "@/shared/lib/dates";
+
 export type DatedEventSummary = {
   id: string;
   title: string;
@@ -54,12 +56,7 @@ export function serializeDatedEventSummary(event: {
   isUndated: boolean;
   eventPeople: Array<{ person: { id: string; name: string } }>;
 }): DatedEventSummary {
-  const dateString =
-    event.date === null
-      ? null
-      : typeof event.date === "string"
-        ? event.date.slice(0, 10)
-        : event.date.toISOString().slice(0, 10);
+  const dateString = event.date === null ? null : toDateOnlyString(event.date);
 
   return {
     id: event.id,

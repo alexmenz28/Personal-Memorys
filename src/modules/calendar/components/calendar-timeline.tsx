@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { parseEventIdFromItemId } from "@/modules/calendar/types/calendar-items";
 import { formatDateForDisplay } from "@/shared/lib/dates";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 export type CalendarTimelineItem = {

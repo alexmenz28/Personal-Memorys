@@ -1,7 +1,7 @@
 "use client";
 
 import { useSidebarCollapsed } from "@/shared/hooks/use-sidebar-collapsed";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CalendarDays,

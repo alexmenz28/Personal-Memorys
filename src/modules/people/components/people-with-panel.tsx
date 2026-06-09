@@ -84,10 +84,6 @@ export function PeopleWithPanel({
     loadErrorMessageRef.current = t("loadError");
   }, [t]);
 
-  useEffect(() => {
-    setPeople(initialPeople);
-  }, [initialPeople]);
-
   const syncUrl = useCallback((personId: string | null) => {
     window.history.replaceState(null, "", buildPersonUrl(personId));
   }, []);
@@ -128,7 +124,10 @@ export function PeopleWithPanel({
   }, []);
 
   const loadPersonRef = useRef(loadPerson);
-  loadPersonRef.current = loadPerson;
+
+  useEffect(() => {
+    loadPersonRef.current = loadPerson;
+  }, [loadPerson]);
 
   // Sync only on server-driven navigation (?person= in URL from RSC).
   // Do not reset panel when initialSelectedPersonId is null — that would
@@ -138,19 +137,31 @@ export function PeopleWithPanel({
       return;
     }
 
-    setPanelPersonId(initialSelectedPersonId);
+    let cancelled = false;
 
-    if (
-      initialSelectedPerson &&
-      initialSelectedPerson.id === initialSelectedPersonId
-    ) {
-      setPanelPerson(initialSelectedPerson);
-      setPanelLoading(false);
-      setPanelError(null);
-      return;
-    }
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
 
-    void loadPersonRef.current(initialSelectedPersonId);
+      setPanelPersonId(initialSelectedPersonId);
+
+      if (
+        initialSelectedPerson &&
+        initialSelectedPerson.id === initialSelectedPersonId
+      ) {
+        setPanelPerson(initialSelectedPerson);
+        setPanelLoading(false);
+        setPanelError(null);
+        return;
+      }
+
+      void loadPersonRef.current(initialSelectedPersonId);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [initialSelectedPerson, initialSelectedPersonId]);
 
   const openPerson = useCallback(

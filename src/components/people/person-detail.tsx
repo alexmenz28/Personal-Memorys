@@ -29,7 +29,7 @@ import {
   relationshipTypes,
 } from "@/modules/people/schemas/person.schema";
 import { ChangeSummary } from "@/shared/components/ui/change-summary";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { FloatingFormActions } from "@/shared/components/layout/floating-form-actions";
 import { FormActions } from "@/shared/components/layout/form-actions";
 import {
@@ -40,7 +40,7 @@ import { ArrowLeft, CalendarPlus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 
 type Preference = {
   id: string;
@@ -72,7 +72,11 @@ type PersonDetailProps = {
   customPreferenceCategories?: CustomPreferenceCategory[];
 };
 
-export function PersonDetail({
+export function PersonDetail(props: PersonDetailProps) {
+  return <PersonDetailContent key={props.person.id} {...props} />;
+}
+
+function PersonDetailContent({
   person,
   variant = "page",
   onBack,
@@ -129,14 +133,6 @@ export function PersonDetail({
     relationship: person.relationship,
     notes: person.notes ?? "",
   };
-
-  useEffect(() => {
-    setName(person.name);
-    setRelationship(person.relationship);
-    setNotes(person.notes ?? "");
-    setPreferences(person.preferences);
-    setPersonNotes(person.personNotes);
-  }, [person]);
 
   function notifyPersonUpdated(
     nextPreferences: Preference[],

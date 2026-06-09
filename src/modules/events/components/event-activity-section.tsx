@@ -16,7 +16,7 @@ import {
   type CustomPreferenceCategory,
 } from "@/modules/people/lib/preference-categories";
 import { FormActions } from "@/shared/components/layout/form-actions";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -106,25 +106,20 @@ export function EventActivitySection({
   );
 
   useEffect(() => {
-    setNotes(initialNotes);
-  }, [initialNotes]);
-
-  useEffect(() => {
-    if (!linkedPeople.some((person) => person.id === personId)) {
-      setPersonId(linkedPeople[0]?.id ?? "");
-    }
-  }, [linkedPeople, personId]);
-
-  useEffect(() => {
     if (!personId) {
-      setPreferences([]);
-      setSelectedPreferenceId(null);
       return;
     }
 
     let cancelled = false;
-    setPreferencesLoading(true);
-    setError(null);
+
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
+
+      setPreferencesLoading(true);
+      setError(null);
+    });
 
     void fetchPersonDetail(personId).then((result) => {
       if (cancelled) {

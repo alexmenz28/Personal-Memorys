@@ -5,7 +5,7 @@ import {
   parseEventIdFromItemId,
   type CalendarDayItem,
 } from "@/modules/calendar/types/calendar-items";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { formatDateForDisplay } from "@/shared/lib/dates";
 import { useTranslations } from "next-intl";
 

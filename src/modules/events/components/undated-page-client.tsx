@@ -14,7 +14,7 @@ import {
   type SerializedEvent,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 type UndatedPageClientProps = {
   title: string;
@@ -35,10 +35,6 @@ export function UndatedPageClient({
   const [selectedEvent, setSelectedEvent] = useState<SerializedEvent | null>(
     null,
   );
-
-  useEffect(() => {
-    setEvents(initialEvents);
-  }, [initialEvents]);
 
   const handleEventCreated = useCallback(
     (created: Parameters<typeof serializeEvent>[0]) => {

@@ -3,10 +3,7 @@
 import { CreateEventDialog } from "@/modules/events/components/create-event-dialog";
 import type { PersonOption } from "@/modules/events/components/event-person-picker";
 import { EventSlidePanel } from "@/modules/events/components/event-slide-panel";
-import {
-  TodayViewClient,
-  mergeTodayEvent,
-} from "@/modules/calendar/components/today-view-client";
+import { TodayActivitiesTimeline } from "@/modules/calendar/components/today-activities-timeline";
 import {
   mergeCalendarEventSummary,
   removeCalendarEventSummary,
@@ -15,6 +12,7 @@ import {
   type DatedEventSummary,
 } from "@/modules/calendar/lib/dated-event-summary";
 import {
+  mergeTodayEvent,
   removeCalendarEvent,
   replaceCalendarEvent,
   serializeEvent,
@@ -151,7 +149,7 @@ export function TodayPageClient({
         />
       }
     >
-      <TodayViewClient
+      <TodayActivitiesTimeline
         today={today}
         timezone={timezone}
         locale={locale}

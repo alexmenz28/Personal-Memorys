@@ -17,7 +17,7 @@ type LocaleCopy = {
   preheader: (title: string, daysBefore: number) => string;
   greeting: string;
   headline: (daysBefore: number) => string;
-  body: (eventDate: string) => string;
+  body: () => string;
   dateLabel: string;
   timingLabel: (daysBefore: number) => string;
   peopleLabel: string;
@@ -40,8 +40,7 @@ const copy: Record<string, LocaleCopy> = {
         : daysBefore === 1
           ? "Your event is tomorrow"
           : `Your event is in ${daysBefore} days`,
-    body: (_eventDate) =>
-      `This is a friendly reminder so you have time to prepare.`,
+    body: () => `This is a friendly reminder so you have time to prepare.`,
     dateLabel: "Event date",
     timingLabel: (days) =>
       days === 0 ? "On the day" : `${days} day${days === 1 ? "" : "s"} before`,
@@ -172,7 +171,7 @@ export function buildReminderEmail({
                   ${safeTitle}
                 </h1>
                 <p style="margin:0;font-size:16px;line-height:1.6;color:#374151;">
-                  ${strings.headline(daysBefore)}. ${strings.body(formattedDate)}
+                  ${strings.headline(daysBefore)}. ${strings.body()}
                 </p>
               </td>
             </tr>

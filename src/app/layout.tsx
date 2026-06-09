@@ -1,7 +1,7 @@
 import { AppProviders } from "@/components/providers/app-providers";
 import { getCurrentUserProfile } from "@/modules/auth/server/session";
-import type { ThemePreference } from "@/shared/lib/theme";
-import type { Metadata } from "next";
+import type { ThemePreference } from "@/lib/theme";
+import type { Metadata, Viewport } from "next";
 import { getLocale, getMessages, getTimeZone } from "next-intl/server";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -16,7 +16,23 @@ export const metadata: Metadata = {
   title: "Personal Memories",
   description:
     "Track important dates, people, and the context you need when the moment arrives.",
+  applicationName: "Personal Memories",
   manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    title: "Memories",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default async function RootLayout({

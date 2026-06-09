@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";

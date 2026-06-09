@@ -9,7 +9,7 @@ import {
   type SerializedEvent,
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { CalendarDays, List } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";

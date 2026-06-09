@@ -1,6 +1,6 @@
 "use client";
 
-import { toNextTheme, type ThemePreference } from "@/shared/lib/theme";
+import { toNextTheme, type ThemePreference } from "@/lib/theme";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 
 type ThemeProviderProps = {

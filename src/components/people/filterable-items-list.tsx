@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FormActions } from "@/shared/components/layout/form-actions";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 

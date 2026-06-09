@@ -1,6 +1,8 @@
+import { toDateOnlyString } from "@/shared/lib/dates";
 import {
   calendarItemIdForEvent,
   expandRecurringOccurrences,
+  matchesAnnualDate,
 } from "@/shared/lib/recurring-events";
 
 export type CalendarDayItem = {
@@ -95,12 +97,11 @@ export function groupItemsByDate(items: CalendarDayItem[]) {
 export function serializeHoliday(
   holiday: { id: string; title: string; date: Date | string },
 ): SerializedHoliday {
-  const date =
-    typeof holiday.date === "string"
-      ? holiday.date.slice(0, 10)
-      : holiday.date.toISOString().slice(0, 10);
-
-  return { id: holiday.id, title: holiday.title, date };
+  return {
+    id: holiday.id,
+    title: holiday.title,
+    date: toDateOnlyString(holiday.date),
+  };
 }
 
 export function parseEventIdFromItemId(itemId: string) {
@@ -154,8 +155,33 @@ export function mergeCalendarEvent(
   });
 }
 
-function toDateOnlyString(value: Date | string) {
-  return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+export function mergeTodayEvent(
+  events: SerializedEvent[],
+  created: SerializedEvent,
+  today: string,
+) {
+  if (created.isUndated || !created.date) {
+    return events;
+  }
+
+  const appearsToday = created.isRecurring
+    ? matchesAnnualDate(created.date, today)
+    : created.date === today;
+
+  if (!appearsToday) {
+    return events;
+  }
+
+  if (events.some((event) => event.id === created.id)) {
+    return events;
+  }
+
+  return [
+    ...events,
+    created.isRecurring
+      ? { ...created, occurrenceDate: today }
+      : created,
+  ];
 }
 
 export function serializeEventNote(note: {

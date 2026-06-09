@@ -17,7 +17,7 @@ import {
 } from "@/modules/profile/schemas/profile.schema";
 import { FormActions } from "@/shared/components/layout/form-actions";
 import { formatHourLabel } from "@/shared/lib/dates";
-import type { ThemePreference } from "@/shared/lib/theme";
+import type { ThemePreference } from "@/lib/theme";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";

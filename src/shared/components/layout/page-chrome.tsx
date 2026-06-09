@@ -55,7 +55,9 @@ export function SetPageChrome({
   const { setChrome } = usePageChrome();
 
   useEffect(() => {
-    setChrome({ title, subtitle, action });
+    queueMicrotask(() => {
+      setChrome({ title, subtitle, action });
+    });
   }, [title, subtitle, action, setChrome]);
 
   return null;

@@ -1,26 +1,43 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const STORAGE_KEY = "personal-memories-sidebar-collapsed";
+const CHANGE_EVENT = "personal-memories-sidebar-change";
+
+function getCollapsedSnapshot() {
+  return window.localStorage.getItem(STORAGE_KEY) === "true";
+}
+
+function subscribeCollapsed(onStoreChange: () => void) {
+  const handleChange = () => onStoreChange();
+  window.addEventListener(CHANGE_EVENT, handleChange);
+  window.addEventListener("storage", handleChange);
+
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, handleChange);
+    window.removeEventListener("storage", handleChange);
+  };
+}
 
 export function useSidebarCollapsed() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [ready, setReady] = useState(false);
+  const collapsed = useSyncExternalStore(
+    subscribeCollapsed,
+    getCollapsedSnapshot,
+    () => false,
+  );
 
-  useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    setCollapsed(stored === "true");
-    setReady(true);
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+
+  const toggleCollapsed = useCallback(() => {
+    const next = !getCollapsedSnapshot();
+    window.localStorage.setItem(STORAGE_KEY, String(next));
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
-
-  function toggleCollapsed() {
-    setCollapsed((current) => {
-      const next = !current;
-      window.localStorage.setItem(STORAGE_KEY, String(next));
-      return next;
-    });
-  }
 
   return { collapsed, toggleCollapsed, ready };
 }

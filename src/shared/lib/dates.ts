@@ -44,6 +44,11 @@ export function toIsoString(value: Date | string) {
   return typeof value === "string" ? value : value.toISOString();
 }
 
+/** Normalizes Date or ISO string to `YYYY-MM-DD`. */
+export function toDateOnlyString(value: Date | string) {
+  return typeof value === "string" ? value.slice(0, 10) : value.toISOString().slice(0, 10);
+}
+
 export function formatDateForDisplay(
   date: Date | string,
   locale: string,

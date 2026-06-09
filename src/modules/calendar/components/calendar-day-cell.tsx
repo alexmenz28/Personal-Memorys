@@ -1,7 +1,7 @@
 "use client";
 
 import type { CalendarDayItem } from "@/modules/calendar/types/calendar-items";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 const PREVIEW_COUNT = 2;

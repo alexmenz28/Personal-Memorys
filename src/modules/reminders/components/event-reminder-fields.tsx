@@ -2,7 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import { REMINDER_DAY_OPTIONS } from "@/modules/reminders/schemas/reminder.schema";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 
 type EventReminderFieldsProps = {

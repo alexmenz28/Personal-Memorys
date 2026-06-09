@@ -12,9 +12,9 @@ import {
 import { EventReminderFields } from "@/modules/reminders/components/event-reminder-fields";
 import { FloatingFormActions } from "@/shared/components/layout/floating-form-actions";
 import { FormActions } from "@/shared/components/layout/form-actions";
-import { cn } from "@/shared/lib/utils";
+import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export type EventFormValues = {
   title: string;
@@ -95,18 +95,6 @@ export function EventForm({
   const [reminderDaysBefore, setReminderDaysBefore] = useState(
     resolvedInitial.reminderDaysBefore,
   );
-
-  useEffect(() => {
-    const next = resolveInitialValues(initialValues);
-    setTitle(next.title);
-    setDescription(next.description);
-    setDate(next.date);
-    setIsUndated(next.isUndated);
-    setIsRecurring(next.isRecurring);
-    setPersonIds(next.personIds);
-    setReminderEnabled(next.reminderEnabled);
-    setReminderDaysBefore(next.reminderDaysBefore);
-  }, [initialValues]);
 
   function handleUndatedChange(checked: boolean) {
     setIsUndated(checked);

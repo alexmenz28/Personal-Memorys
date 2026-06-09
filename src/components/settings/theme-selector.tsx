@@ -5,7 +5,8 @@ import {
   fromNextTheme,
   toNextTheme,
   type ThemePreference,
-} from "@/shared/lib/theme";
+} from "@/lib/theme";
+import { useClientMounted } from "@/shared/hooks/use-client-mounted";
 import { cn } from "@/lib/utils";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -48,18 +49,16 @@ function resolveActiveTheme(
 export function ThemeSelector({ initialTheme }: ThemeSelectorProps) {
   const t = useTranslations("settings");
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useClientMounted();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [optimisticTheme, setOptimisticTheme] =
     useState<ThemePreference | null>(null);
+  const [persistingTheme, setPersistingTheme] =
+    useState<ThemePreference | null>(null);
   const latestRequestRef = useRef(0);
   const persistTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingPersistThemeRef = useRef<ThemePreference | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -79,6 +78,7 @@ export function ThemeSelector({ initialTheme }: ThemeSelectorProps) {
   function persistTheme(nextTheme: ThemePreference, previousTheme: ThemePreference) {
     const requestId = latestRequestRef.current + 1;
     latestRequestRef.current = requestId;
+    setPersistingTheme(nextTheme);
 
     startTransition(async () => {
       const result = await updateProfileTheme(nextTheme);
@@ -86,6 +86,8 @@ export function ThemeSelector({ initialTheme }: ThemeSelectorProps) {
       if (requestId !== latestRequestRef.current) {
         return;
       }
+
+      setPersistingTheme(null);
 
       if (!result.ok) {
         setOptimisticTheme(previousTheme);
@@ -127,8 +129,7 @@ export function ThemeSelector({ initialTheme }: ThemeSelectorProps) {
       <div className="grid grid-cols-3 gap-2">
         {options.map(({ value, icon: Icon, labelKey }) => {
           const isActive = activeTheme === value;
-          const isSaving =
-            isPending && pendingPersistThemeRef.current === value;
+          const isSaving = isPending && persistingTheme === value;
 
           return (
             <button

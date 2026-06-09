@@ -12,7 +12,7 @@ import {
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 type UpcomingPageClientProps = {
   title: string;
@@ -35,13 +35,7 @@ export function UpcomingPageClient({
   events: initialEvents,
   people,
 }: UpcomingPageClientProps) {
-  const [holidays, setHolidays] = useState(initialHolidays);
   const [events, setEvents] = useState(initialEvents);
-
-  useEffect(() => {
-    setHolidays(initialHolidays);
-    setEvents(initialEvents);
-  }, [initialEvents, initialHolidays]);
 
   const handleEventCreated = useCallback(
     (created: Parameters<typeof serializeEvent>[0]) => {
@@ -79,7 +73,7 @@ export function UpcomingPageClient({
       }
     >
       <UpcomingViewSwitcher
-        holidays={holidays}
+        holidays={initialHolidays}
         events={events}
         people={people}
         calendarRange={calendarRange}
