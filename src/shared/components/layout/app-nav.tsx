@@ -87,6 +87,7 @@ export function AppNav() {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const { collapsed, toggleCollapsed, ready } = useSidebarCollapsed();
 
   return (
@@ -116,9 +117,9 @@ export function AppNav() {
                 className="min-w-0"
               >
                 <p className="truncate text-sm font-semibold tracking-tight">
-                  Personal Memories
+                  {tCommon("appName")}
                 </p>
-                <p className="text-xs text-muted-foreground">Your moments</p>
+                <p className="text-xs text-muted-foreground">{t("tagline")}</p>
               </motion.div>
             ) : null}
           </AnimatePresence>

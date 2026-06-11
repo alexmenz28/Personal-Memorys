@@ -136,14 +136,13 @@ export function ThemeSelector({ initialTheme }: ThemeSelectorProps) {
               key={value}
               type="button"
               aria-pressed={isActive}
-              disabled={!mounted}
               onClick={() => handleSelect(value)}
               className={cn(
                 "flex flex-col items-center gap-2 rounded-xl border px-3 py-4 text-sm font-medium transition-colors duration-150",
                 isActive
                   ? "border-primary bg-primary/5 text-foreground shadow-sm"
                   : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:bg-muted/50 hover:text-foreground",
-                !mounted && "opacity-80",
+                !mounted && "opacity-90",
               )}
             >
               <Icon className={cn("size-4", isSaving && "animate-pulse")} />
