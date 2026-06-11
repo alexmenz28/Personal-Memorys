@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { NextIntlClientProvider } from "next-intl";
 import type { ThemePreference } from "@/lib/theme";
+import { clerkAppearance } from "@/shared/lib/clerk-appearance";
 
 type AppProvidersProps = {
   children: React.ReactNode;
@@ -24,12 +25,7 @@ export function AppProviders({
     <ClerkProvider
       signInFallbackRedirectUrl="/auth/continue"
       signUpFallbackRedirectUrl="/auth/continue"
-      appearance={{
-        layout: {
-          // Hide Clerk's dev-instance banner while using pk_test_ keys (Option A).
-          unsafe_disableDevelopmentModeWarnings: true,
-        },
-      }}
+      appearance={clerkAppearance}
     >
       <ThemeProvider userTheme={userTheme}>
         <NextIntlClientProvider
