@@ -12,6 +12,8 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
+    "check-env": "node scripts/check-env.mjs",
+    "check-env:production": "node scripts/check-env.mjs --production",
     "resend:test": "node scripts/test-resend.mjs",
     "reminders:run": "node -e \"fetch('http://localhost:3000/api/dev/run-reminders').then(r=>r.json()).then(console.log).catch(e=>console.error('¿npm run dev activo?', e))\""
   },

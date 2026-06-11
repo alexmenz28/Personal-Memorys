@@ -24,6 +24,12 @@ export function AppProviders({
     <ClerkProvider
       signInFallbackRedirectUrl="/auth/continue"
       signUpFallbackRedirectUrl="/auth/continue"
+      appearance={{
+        layout: {
+          // Hide Clerk's dev-instance banner while using pk_test_ keys (Option A).
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}
     >
       <ThemeProvider userTheme={userTheme}>
         <NextIntlClientProvider
