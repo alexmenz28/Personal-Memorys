@@ -1,13 +1,12 @@
 import { buttonVariants } from "@/components/ui/button";
-import { resolveUserProfile } from "@/modules/auth/server/session";
+import { getAuthUserId, resolveUserProfile } from "@/modules/auth/server/session";
 import { cn } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function LandingPage() {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
   const t = await getTranslations("landing");
 
   if (userId) {

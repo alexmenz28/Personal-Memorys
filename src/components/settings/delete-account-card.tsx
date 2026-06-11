@@ -3,9 +3,10 @@
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { authClient } from "@/modules/auth/client/auth-client";
 import { deleteAccount } from "@/modules/profile/actions/profile.actions";
-import { useClerk } from "@clerk/nextjs";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 type DeleteAccountCardProps = {
@@ -15,7 +16,7 @@ type DeleteAccountCardProps = {
 export function DeleteAccountCard({ userEmail }: DeleteAccountCardProps) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const { signOut } = useClerk();
+  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -32,7 +33,9 @@ export function DeleteAccountCard({ userEmail }: DeleteAccountCardProps) {
       }
 
       setDialogOpen(false);
-      await signOut({ redirectUrl: "/" });
+      await authClient.signOut();
+      router.push("/");
+      router.refresh();
     });
   }
 

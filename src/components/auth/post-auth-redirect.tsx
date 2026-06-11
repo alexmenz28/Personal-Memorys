@@ -8,7 +8,7 @@ type PostAuthRedirectProps = {
 };
 
 /**
- * Full-page navigation after Clerk sign-in.
+ * Full-page navigation after sign-in.
  * Client-side router.replace + server redirect can leave a blank "Rendering…" screen.
  */
 export function PostAuthRedirect({ to }: PostAuthRedirectProps) {

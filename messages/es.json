@@ -20,6 +20,26 @@
     "collapse": "Contraer",
     "expand": "Expandir menú"
   },
+  "auth": {
+    "signInTitle": "Iniciar sesión",
+    "signInSubtitle": "Bienvenido de nuevo a Memorias Personales.",
+    "signUpTitle": "Crear cuenta",
+    "signUpSubtitle": "Empieza a guardar los momentos que importan.",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "name": "Nombre",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "signingIn": "Iniciando sesión…",
+    "signingUp": "Creando cuenta…",
+    "signInError": "No se pudo iniciar sesión. Revisa tu correo y contraseña.",
+    "signUpError": "No se pudo crear la cuenta. Prueba con otro correo.",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?",
+    "signOut": "Cerrar sesión",
+    "settings": "Ajustes",
+    "accountMenu": "Menú de cuenta"
+  },
   "landing": {
     "title": "Recuerda lo que importa",
     "subtitle": "Lleva el control de fechas importantes, personas y el contexto que necesitas cuando llega el momento — lugares favoritos, ideas de regalo y notas personales.",

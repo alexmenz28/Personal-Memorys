@@ -1,6 +1,6 @@
-import { getCachedProfileByClerkId } from "@/modules/auth/server/cached-profile";
+import { getCachedProfileByAuthUserId } from "@/modules/auth/server/cached-profile";
+import { getAuthUserId } from "@/modules/auth/server/session";
 import { defaultLocale, isValidLocale } from "@/i18n/config";
-import { auth } from "@clerk/nextjs/server";
 import { getRequestConfig } from "next-intl/server";
 import { cookies } from "next/headers";
 
@@ -13,10 +13,10 @@ export default getRequestConfig(async () => {
   let timeZone = "UTC";
 
   try {
-    const { userId } = await auth();
+    const userId = await getAuthUserId();
 
     if (userId) {
-      const profile = await getCachedProfileByClerkId(userId);
+      const profile = await getCachedProfileByAuthUserId(userId);
 
       if (profile?.timezone) {
         timeZone = profile.timezone;

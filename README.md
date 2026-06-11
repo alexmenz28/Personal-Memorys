@@ -6,7 +6,7 @@ Web app to track important dates, people, and the context you need when the mome
 
 - **Next.js 16** (App Router) + TypeScript
 - **PostgreSQL** (Neon recommended) + Prisma
-- **Clerk** (authentication)
+- **Better Auth** (email/password, self-hosted)
 - **next-intl** (English default, Spanish in settings)
 - **TanStack Query** + Zod
 - **Inngest** (holiday sync, email reminders)
@@ -32,24 +32,14 @@ cp .env.example .env
 Required for local development:
 
 - `DATABASE_URL` — Neon PostgreSQL connection string
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
+- `BETTER_AUTH_SECRET` — generate with `npx auth@latest secret`
+- `BETTER_AUTH_URL` — `http://localhost:3000` locally
 
 Optional (recommended for production):
-
-- `CLERK_WEBHOOK_SECRET` — user sync on sign-up/delete
 - `INNGEST_EVENT_KEY` / `INNGEST_SIGNING_KEY` — background jobs
 - `RESEND_API_KEY` — email reminders
 
-### 3. Set up Clerk
-
-1. Create an application at [clerk.com](https://clerk.com)
-2. Copy API keys into `.env`
-3. Enable email sign-in
-4. (Optional) Add webhook endpoint: `https://your-domain/api/webhooks/clerk`
-   - Events: `user.created`, `user.updated`, `user.deleted`
-
-### 4. Set up the database
+### 3. Set up the database
 
 ```bash
 npm run db:migrate
@@ -61,7 +51,7 @@ Or push schema without migrations:
 npm run db:push
 ```
 
-### 5. Run the app
+### 4. Run the app
 
 ```bash
 npm run dev
@@ -76,8 +66,8 @@ src/
   app/
     (app)/          # Authenticated app (today, upcoming, people, undated, settings)
     onboarding/     # First-time setup (country, timezone, language)
-    sign-in/        # Clerk auth
-    api/            # Inngest + Clerk webhooks
+    sign-in/        # Auth forms
+    api/            # Better Auth + Inngest
   components/       # UI and layout
   i18n/             # Locale config
   lib/

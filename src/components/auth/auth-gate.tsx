@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
+import { authClient } from "@/modules/auth/client/auth-client";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -14,17 +14,17 @@ export function AuthGate({
   children,
   redirectTo = "/sign-in",
 }: AuthGateProps) {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const t = useTranslations("common");
 
   useEffect(() => {
-    if (isLoaded && !isSignedIn) {
+    if (!isPending && !session) {
       router.replace(redirectTo);
     }
-  }, [isLoaded, isSignedIn, redirectTo, router]);
+  }, [isPending, session, redirectTo, router]);
 
-  if (!isLoaded) {
+  if (isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-sm text-muted-foreground">{t("loading")}</p>
@@ -32,7 +32,7 @@ export function AuthGate({
     );
   }
 
-  if (!isSignedIn) {
+  if (!session) {
     return null;
   }
 

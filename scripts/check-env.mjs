@@ -1,15 +1,7 @@
 import "dotenv/config";
 
 const isProductionCheck = process.argv.includes("--production");
-const vars = [
-  "DATABASE_URL",
-  "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
-  "CLERK_SECRET_KEY",
-  "NEXT_PUBLIC_CLERK_SIGN_IN_URL",
-  "NEXT_PUBLIC_CLERK_SIGN_UP_URL",
-  "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL",
-  "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL",
-];
+const vars = ["DATABASE_URL", "BETTER_AUTH_SECRET", "BETTER_AUTH_URL"];
 
 let hasErrors = false;
 
@@ -20,14 +12,13 @@ for (const key of vars) {
   if (!value) issues.push("MISSING");
   if (value.includes("%")) issues.push("HAS_PERCENT");
   if (value.includes(" ")) issues.push("HAS_SPACES");
-  if (!value.startsWith("/") && key.includes("URL") && !key.includes("KEY")) {
-    issues.push("SHOULD_START_WITH_SLASH");
+
+  if (key === "BETTER_AUTH_URL" && value && !value.startsWith("http")) {
+    issues.push("SHOULD_START_WITH_http");
   }
-  if (key.includes("PUBLISHABLE") && !value.startsWith("pk_")) {
-    issues.push("SHOULD_START_WITH_pk_");
-  }
-  if (key === "CLERK_SECRET_KEY" && !value.startsWith("sk_")) {
-    issues.push("SHOULD_START_WITH_sk_");
+
+  if (key === "BETTER_AUTH_SECRET" && value && value.length < 32) {
+    issues.push("TOO_SHORT");
   }
 
   if (issues.length) {
@@ -37,36 +28,18 @@ for (const key of vars) {
   console.log(`${key}: ${issues.length ? issues.join(", ") : "ok"}`);
 }
 
-const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-const secretKey = process.env.CLERK_SECRET_KEY ?? "";
-
-if (publishableKey.startsWith("pk_test_")) {
-  console.log("clerk: development instance (pk_test_) — sign-in shows “Development mode”");
-} else if (publishableKey.startsWith("pk_live_")) {
-  console.log("clerk: production instance (pk_live_)");
-} else if (publishableKey) {
-  console.log("clerk: unknown publishable key prefix");
-  hasErrors = true;
-}
-
-if (secretKey.startsWith("sk_test_") && publishableKey.startsWith("pk_live_")) {
-  console.log("clerk: MISMATCH — publishable is live but secret is test");
-  hasErrors = true;
-}
-
-if (secretKey.startsWith("sk_live_") && publishableKey.startsWith("pk_test_")) {
-  console.log("clerk: MISMATCH — publishable is test but secret is live");
-  hasErrors = true;
-}
-
 if (isProductionCheck) {
-  if (publishableKey.startsWith("pk_test_")) {
+  const authUrl = process.env.BETTER_AUTH_URL ?? "";
+
+  if (authUrl.startsWith("http://localhost")) {
     console.log(
-      "production: FAIL — use Clerk production keys (pk_live_ / sk_live_) in Vercel",
+      "production: FAIL — BETTER_AUTH_URL must be your public HTTPS URL in Vercel",
     );
     hasErrors = true;
-  } else {
-    console.log("production: ok — Clerk production keys detected");
+  } else if (authUrl.startsWith("https://")) {
+    console.log("production: ok — BETTER_AUTH_URL uses HTTPS");
+  } else if (authUrl) {
+    console.log("production: WARN — BETTER_AUTH_URL should be a full HTTPS URL");
   }
 }
 

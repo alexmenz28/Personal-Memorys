@@ -1,8 +1,7 @@
 "use client";
 
+import { UserMenu } from "@/components/auth/user-menu";
 import { usePageChrome } from "@/shared/components/layout/page-chrome";
-import { UserButton } from "@clerk/nextjs";
-import { clerkAppearance } from "@/shared/lib/clerk-appearance";
 
 export function AppHeader() {
   const { chrome } = usePageChrome();
@@ -21,7 +20,7 @@ export function AppHeader() {
           ) : null}
         </div>
         <div className="flex shrink-0 items-center">
-          <UserButton appearance={clerkAppearance} />
+          <UserMenu />
         </div>
       </div>
     </header>

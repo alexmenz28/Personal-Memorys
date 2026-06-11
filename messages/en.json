@@ -20,6 +20,26 @@
     "collapse": "Collapse",
     "expand": "Expand menu"
   },
+  "auth": {
+    "signInTitle": "Sign in",
+    "signInSubtitle": "Welcome back to Personal Memories.",
+    "signUpTitle": "Create account",
+    "signUpSubtitle": "Start tracking the moments that matter.",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signingIn": "Signing in…",
+    "signingUp": "Creating account…",
+    "signInError": "Could not sign in. Check your email and password.",
+    "signUpError": "Could not create account. Try a different email.",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signOut": "Sign out",
+    "settings": "Settings",
+    "accountMenu": "Account menu"
+  },
   "landing": {
     "title": "Remember what matters",
     "subtitle": "Track important dates, people, and the context you need when the moment arrives — favorite places, gift ideas, and personal notes.",

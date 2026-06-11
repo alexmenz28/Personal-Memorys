@@ -1,7 +1,7 @@
 import "server-only";
 
-import { clerkClient } from "@clerk/nextjs/server";
-import { cookies } from "next/headers";
+import { auth } from "@/modules/auth/server/auth";
+import { cookies, headers } from "next/headers";
 import { syncHolidaysForCountry } from "@/modules/holidays/server/sync";
 import { inngest } from "@/modules/jobs/inngest/client";
 import { profileRepository } from "@/modules/profile/server/repository";
@@ -11,6 +11,7 @@ import {
   type UpdateProfileInput,
 } from "@/modules/profile/schemas/profile.schema";
 import type { ThemePreference } from "@/shared/lib/theme";
+import { db } from "@/shared/server/db";
 
 async function persistLocaleCookie(locale: string) {
   const cookieStore = await cookies();
@@ -79,13 +80,18 @@ export const profileService = {
     await profileRepository.update(profileId, { theme });
   },
 
-  async deleteAccount(profileId: string, clerkUserId: string) {
+  async deleteAccount(profileId: string, authUserId: string) {
     await profileRepository.deleteById(profileId);
 
     const cookieStore = await cookies();
     cookieStore.delete("locale");
 
-    const client = await clerkClient();
-    await client.users.deleteUser(clerkUserId);
+    await db.user.delete({
+      where: { id: authUserId },
+    });
+
+    await auth.api.signOut({
+      headers: await headers(),
+    });
   },
 };

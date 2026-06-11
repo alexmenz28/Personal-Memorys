@@ -7,19 +7,19 @@ import { ThemePreference as PrismaThemePreference } from "@/generated/prisma/cli
 const profileInclude = { subscription: true } as const;
 
 export const profileRepository = {
-  findByClerkUserId(clerkUserId: string) {
+  findByAuthUserId(authUserId: string) {
     return db.userProfile.findUnique({
-      where: { clerkUserId },
+      where: { authUserId },
       include: profileInclude,
     });
   },
 
-  upsertFromClerk(input: { clerkUserId: string; email: string }) {
+  upsertFromAuth(input: { authUserId: string; email: string }) {
     return db.userProfile.upsert({
-      where: { clerkUserId: input.clerkUserId },
+      where: { authUserId: input.authUserId },
       update: { email: input.email },
       create: {
-        clerkUserId: input.clerkUserId,
+        authUserId: input.authUserId,
         email: input.email,
         countryCode: "US",
         subscription: { create: {} },

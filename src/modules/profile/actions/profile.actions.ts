@@ -20,7 +20,7 @@ export async function completeOnboarding(input: UpdateProfileInput) {
     }
 
     await profileService.completeOnboarding(profile.id, input);
-    revalidateUserProfileCache(profile.clerkUserId);
+    revalidateUserProfileCache(profile.authUserId);
     updateTag(`holidays-${input.countryCode}`);
     revalidatePath("/today");
   });
@@ -39,7 +39,7 @@ export async function updateProfileSettings(input: UpdateProfileInput) {
       previousCountryCode,
     );
 
-    revalidateUserProfileCache(profile.clerkUserId);
+    revalidateUserProfileCache(profile.authUserId);
 
     if (input.countryCode !== previousCountryCode) {
       updateTag(`holidays-${input.countryCode}`);
@@ -60,14 +60,14 @@ export async function updateProfileTheme(theme: ThemePreference) {
   return runAction(async () => {
     const profile = await requireCurrentUserProfile();
     await profileService.updateTheme(profile.id, theme);
-    revalidateUserProfileCache(profile.clerkUserId);
+    revalidateUserProfileCache(profile.authUserId);
   });
 }
 
 export async function deleteAccount() {
   return runAction(async () => {
     const profile = await requireCurrentUserProfile();
-    await profileService.deleteAccount(profile.id, profile.clerkUserId);
-    revalidateUserProfileCache(profile.clerkUserId);
+    await profileService.deleteAccount(profile.id, profile.authUserId);
+    revalidateUserProfileCache(profile.authUserId);
   });
 }

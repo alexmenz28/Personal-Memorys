@@ -1,5 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
-import { resolveUserProfile } from "@/modules/auth/server/session";
+import { getAuthUserId, resolveUserProfile } from "@/modules/auth/server/session";
 import {
   buildExportFilename,
   buildUserExport,
@@ -7,7 +6,7 @@ import {
 } from "@/modules/export/server/service";
 
 export async function GET(request: Request) {
-  const { userId } = await auth();
+  const userId = await getAuthUserId();
 
   if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });

@@ -1,54 +1,48 @@
 import "server-only";
 
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { getCachedProfileByClerkId } from "@/modules/auth/server/cached-profile";
+import { auth } from "@/modules/auth/server/auth";
+import { getCachedProfileByAuthUserId } from "@/modules/auth/server/cached-profile";
 import { profileRepository } from "@/modules/profile/server/repository";
-import { revalidateTag } from "next/cache";
+import { headers } from "next/headers";
 import { cache } from "react";
 
-export async function getClerkUserId() {
-  const { userId } = await auth();
-  return userId;
+export async function getAuthSession() {
+  return auth.api.getSession({
+    headers: await headers(),
+  });
+}
+
+export async function getAuthUserId() {
+  const session = await getAuthSession();
+  return session?.user.id ?? null;
 }
 
 export const getCurrentUserProfile = cache(async () => {
-  const userId = await getClerkUserId();
+  const userId = await getAuthUserId();
 
   if (!userId) {
     return null;
   }
 
-  return getCachedProfileByClerkId(userId);
+  return getCachedProfileByAuthUserId(userId);
 });
 
-export const syncUserProfileFromClerk = cache(async () => {
-  const user = await currentUser();
+export const syncUserProfileFromAuth = cache(async () => {
+  const session = await getAuthSession();
 
-  if (!user) {
+  if (!session?.user.email) {
     return null;
   }
 
-  const email =
-    user.primaryEmailAddress?.emailAddress ??
-    user.emailAddresses[0]?.emailAddress;
-
-  if (!email) {
-    return null;
-  }
-
-  const profile = await profileRepository.upsertFromClerk({
-    clerkUserId: user.id,
-    email,
+  return profileRepository.upsertFromAuth({
+    authUserId: session.user.id,
+    email: session.user.email,
   });
-
-  revalidateTag(`user-profile-${user.id}`, "max");
-
-  return profile;
 });
 
 export const resolveUserProfile = cache(async () => {
   return (
-    (await getCurrentUserProfile()) ?? (await syncUserProfileFromClerk())
+    (await getCurrentUserProfile()) ?? (await syncUserProfileFromAuth())
   );
 });
 

@@ -5,7 +5,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 import { Pool } from "pg";
 
 /** Bump after `prisma generate` when the schema changes (new models/fields). */
-const PRISMA_CLIENT_REVISION = 2;
+const PRISMA_CLIENT_REVISION = 3;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;

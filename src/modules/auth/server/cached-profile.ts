@@ -3,17 +3,17 @@ import "server-only";
 import { profileRepository } from "@/modules/profile/server/repository";
 import { updateTag, unstable_cache } from "next/cache";
 
-export function getCachedProfileByClerkId(clerkUserId: string) {
+export function getCachedProfileByAuthUserId(authUserId: string) {
   return unstable_cache(
-    async () => profileRepository.findByClerkUserId(clerkUserId),
-    ["user-profile", clerkUserId],
+    async () => profileRepository.findByAuthUserId(authUserId),
+    ["user-profile", authUserId],
     {
       revalidate: 60,
-      tags: [`user-profile-${clerkUserId}`],
+      tags: [`user-profile-${authUserId}`],
     },
   )();
 }
 
-export function revalidateUserProfileCache(clerkUserId: string) {
-  updateTag(`user-profile-${clerkUserId}`);
+export function revalidateUserProfileCache(authUserId: string) {
+  updateTag(`user-profile-${authUserId}`);
 }
