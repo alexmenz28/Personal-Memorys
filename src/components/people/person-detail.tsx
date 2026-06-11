@@ -436,72 +436,6 @@ function PersonDetailContent({
             <CardTitle>{t("preferences")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {preferences.length > 0 ? (
-              <FilterableItemsList
-                items={preferences}
-                emptyMessage={t("noPreferences")}
-                noResultsMessage={t("noFilterResults")}
-                viewAllLabel={(count) => t("viewAllPreferences", { count })}
-                viewLessLabel={t("viewLess")}
-                searchPlaceholder={t("searchPreferences")}
-                previewLayout={isPanel ? "list" : "grid"}
-                getSearchText={(preference) =>
-                  `${preference.label} ${preference.value}`
-                }
-                categoryFilter={{
-                  getCategory: (preference) =>
-                    getPreferenceCategoryFilterKey(
-                      preference.category,
-                      preference.customCategoryId,
-                    ),
-                  allLabel: t("filterAll"),
-                  categories: categoryOptions,
-                }}
-                filteredCountLabel={(count, total) =>
-                  t("filteredCount", { count, total })
-                }
-                renderItem={(preference, context) => (
-                  <div
-                    className={
-                      context === "preview"
-                        ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
-                        : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
-                    }
-                  >
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {getCategoryLabel(
-                          preference.category,
-                          preference.customCategoryId,
-                        )}
-                      </p>
-                      <p className="font-medium">{preference.label}</p>
-                      <p
-                        className={
-                          context === "preview"
-                            ? "truncate text-sm text-muted-foreground"
-                            : "text-sm text-muted-foreground"
-                        }
-                      >
-                        {preference.value}
-                      </p>
-                    </div>
-                    {context === "full" ? (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => removePreference(preference.id)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    ) : null}
-                  </div>
-                )}
-              />
-            ) : (
-              <p className="text-sm text-muted-foreground">{t("noPreferences")}</p>
-            )}
-
             <div className="space-y-3 rounded-xl border border-dashed border-border/60 bg-muted/10 p-4">
               <p className="text-sm font-medium">{t("addPreference")}</p>
               <div
@@ -547,6 +481,67 @@ function PersonDetailContent({
                 {t("addPreference")}
               </Button>
             </div>
+            <FilterableItemsList
+              items={preferences}
+              emptyMessage={t("noPreferences")}
+              noResultsMessage={t("noFilterResults")}
+              viewAllLabel={(count) => t("viewAllPreferences", { count })}
+              viewLessLabel={t("viewLess")}
+              searchPlaceholder={t("searchPreferences")}
+              previewLayout={isPanel ? "list" : "grid"}
+              getSearchText={(preference) =>
+                `${preference.label} ${preference.value}`
+              }
+              categoryFilter={{
+                getCategory: (preference) =>
+                  getPreferenceCategoryFilterKey(
+                    preference.category,
+                    preference.customCategoryId,
+                  ),
+                allLabel: t("filterAll"),
+                categories: categoryOptions,
+              }}
+              filteredCountLabel={(count, total) =>
+                t("filteredCount", { count, total })
+              }
+              renderItem={(preference, context) => (
+                <div
+                  className={
+                    context === "preview"
+                      ? "h-full rounded-xl border border-border/60 bg-muted/30 p-3"
+                      : "flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/30 p-3"
+                  }
+                >
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                      {getCategoryLabel(
+                        preference.category,
+                        preference.customCategoryId,
+                      )}
+                    </p>
+                    <p className="font-medium">{preference.label}</p>
+                    <p
+                      className={
+                        context === "preview"
+                          ? "truncate text-sm text-muted-foreground"
+                          : "text-sm text-muted-foreground"
+                      }
+                    >
+                      {preference.value}
+                    </p>
+                  </div>
+                  {context === "full" ? (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={() => removePreference(preference.id)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+            />
           </CardContent>
         </Card>
       </div>

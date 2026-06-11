@@ -15,7 +15,16 @@ export const createEventNoteFromPreferenceSchema = z.object({
   preferenceId: z.string().min(1),
 });
 
+export const createEventNoteFromPersonNoteSchema = z.object({
+  eventId: z.string().min(1),
+  personId: z.string().min(1),
+  personNoteId: z.string().min(1),
+});
+
 export type CreateEventNoteInput = z.infer<typeof createEventNoteSchema>;
 export type CreateEventNoteFromPreferenceInput = z.infer<
   typeof createEventNoteFromPreferenceSchema
+>;
+export type CreateEventNoteFromPersonNoteInput = z.infer<
+  typeof createEventNoteFromPersonNoteSchema
 >;

@@ -12,6 +12,7 @@ import { eventsRepository } from "@/modules/events/server/repository";
 import { peopleRepository } from "@/modules/people/server/repository";
 import {
   createEventNoteFromPreferenceSchema,
+  createEventNoteFromPersonNoteSchema,
   createEventNoteSchema,
 } from "@/modules/events/schemas/event-note.schema";
 import {
@@ -83,6 +84,22 @@ export async function createEventNoteFromPreference(input: unknown) {
     const data = createEventNoteFromPreferenceSchema.parse(input);
 
     const note = await eventNotesRepository.createFromPreference(
+      profile.id,
+      data,
+    );
+
+    revalidateEventsCache(profile.id);
+
+    return serializeEventNote(note);
+  });
+}
+
+export async function createEventNoteFromPersonNote(input: unknown) {
+  return runAction(async () => {
+    const profile = await requireCurrentUserProfile();
+    const data = createEventNoteFromPersonNoteSchema.parse(input);
+
+    const note = await eventNotesRepository.createFromPersonNote(
       profile.id,
       data,
     );

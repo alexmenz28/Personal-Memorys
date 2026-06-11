@@ -68,7 +68,7 @@ Patrón UX documentado en `docs/ARCHITECTURE.md` (panel vs modal vs inline).
 |---|--------|
 | 5.1 | Exportar datos (JSON/CSV) | ✅ Hecho |
 | 5.2 | Eliminar cuenta + borrado en cascada | ✅ Hecho |
-| 5.3 | Webhook Clerk ya sincroniza usuarios — revisar edge cases |
+| 5.3 | Better Auth + perfil de usuario — revisar edge cases de sesión |
 
 ---
 
@@ -155,6 +155,6 @@ Repetir en **desktop** y **móvil** tras cada cambio relevante.
 
 ## Orden recomendado para las próximas sesiones
 
-1. **Fase 5.3** — edge cases webhook Clerk
+1. **Fase 5.3** — edge cases auth / sesión
 2. **Lint** — reglas `react-hooks/*` y avisos pendientes
 3. **Fase 6** — monetización y v2

@@ -123,10 +123,10 @@
       "undated": "Registro del evento"
     },
     "eventActivityHint": {
-      "past": "Elige una preferencia de la persona y regístrala como lo que ocurrió en este evento.",
-      "today": "Elige una preferencia y regístrala como lo que está pasando hoy.",
-      "future": "Elige una preferencia y regístrala como plan para este evento.",
-      "undated": "Elige una preferencia y regístrala en este evento sin fecha fija."
+      "past": "Vincula una preferencia o nota de la persona con lo que ocurrió en este evento.",
+      "today": "Vincula una preferencia o nota con lo que está pasando hoy.",
+      "future": "Vincula una preferencia o nota como plan para este evento.",
+      "undated": "Vincula una preferencia o nota en este evento sin fecha fija."
     },
     "eventActivityLog": {
       "past": "Registrar lo que hicieron",
@@ -136,11 +136,18 @@
     },
     "eventActivityNeedPeople": "Vincula al menos una persona al evento para registrar actividad.",
     "eventActivityPerson": "Persona",
-    "eventActivityLoading": "Cargando preferencias…",
+    "eventActivityLoading": "Cargando datos de la persona…",
+    "eventActivityReferenceType": "Tipo de referencia",
+    "eventActivityReferencePreference": "Preferencia",
+    "eventActivityReferenceNote": "Nota",
     "eventActivityNoPreferences": "Esta persona aún no tiene preferencias guardadas.",
+    "eventActivityNoPersonNotes": "Esta persona aún no tiene notas guardadas.",
     "eventActivityAllLogged": "Ya registraste todas sus preferencias en este evento.",
+    "eventActivityAllNotesLogged": "Ya vinculaste todas sus notas en este evento.",
     "eventActivityPickPreference": "Elegir preferencia",
+    "eventActivityPickPersonNote": "Elegir nota",
     "eventActivityAddPreference": "Agregar preferencia en su perfil",
+    "eventActivityAddPersonNote": "Agregar nota en su perfil",
     "noEventActivity": "Aún no hay registros para este evento.",
     "viewPersonProfile": "Ver perfil",
     "reminderDays": {

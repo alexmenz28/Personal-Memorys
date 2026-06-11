@@ -155,7 +155,8 @@ model PersonNote {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  person     Person      @relation(fields: [personId], references: [id], onDelete: Cascade)
+  eventNotes EventNote[]
 
   @@index([personId])
   @@map("person_notes")
@@ -203,6 +204,7 @@ model EventNote {
   eventId      String             @map("event_id")
   personId     String?            @map("person_id")
   preferenceId String?            @map("preference_id")
+  personNoteId String?            @map("person_note_id")
   category         PreferenceCategory @default(OTHER)
   customCategoryId String?            @map("custom_category_id")
   label            String
@@ -212,11 +214,13 @@ model EventNote {
 
   event          Event                   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   person         Person?                 @relation(fields: [personId], references: [id], onDelete: SetNull)
+  personNote     PersonNote?             @relation(fields: [personNoteId], references: [id], onDelete: SetNull)
   customCategory UserPreferenceCategory? @relation(fields: [customCategoryId], references: [id], onDelete: SetNull)
 
   @@index([eventId])
   @@index([personId])
   @@index([eventId, preferenceId])
+  @@index([eventId, personNoteId])
   @@map("event_notes")
 }
 

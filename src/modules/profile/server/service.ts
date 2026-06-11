@@ -1,6 +1,7 @@
 import "server-only";
 
 import { auth } from "@/modules/auth/server/auth";
+import { persistLocaleCookie } from "@/modules/profile/server/locale-cookie";
 import { cookies, headers } from "next/headers";
 import { syncHolidaysForCountry } from "@/modules/holidays/server/sync";
 import { inngest } from "@/modules/jobs/inngest/client";
@@ -12,16 +13,6 @@ import {
 } from "@/modules/profile/schemas/profile.schema";
 import type { ThemePreference } from "@/shared/lib/theme";
 import { db } from "@/shared/server/db";
-
-async function persistLocaleCookie(locale: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("locale", locale, {
-    path: "/",
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 365,
-  });
-}
 
 async function syncHolidaysIfNeeded(
   countryCode: string,

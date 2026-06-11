@@ -7,9 +7,8 @@ import { cookies } from "next/headers";
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
   const cookieLocale = cookieStore.get("locale")?.value;
-  const locale =
-    cookieLocale && isValidLocale(cookieLocale) ? cookieLocale : defaultLocale;
 
+  let locale = defaultLocale;
   let timeZone = "UTC";
 
   try {
@@ -21,9 +20,19 @@ export default getRequestConfig(async () => {
       if (profile?.timezone) {
         timeZone = profile.timezone;
       }
+
+      if (cookieLocale && isValidLocale(cookieLocale)) {
+        locale = cookieLocale;
+      } else if (profile?.locale && isValidLocale(profile.locale)) {
+        locale = profile.locale;
+      }
+    } else if (cookieLocale && isValidLocale(cookieLocale)) {
+      locale = cookieLocale;
     }
   } catch {
-    // Public routes — keep UTC fallback.
+    if (cookieLocale && isValidLocale(cookieLocale)) {
+      locale = cookieLocale;
+    }
   }
 
   return {

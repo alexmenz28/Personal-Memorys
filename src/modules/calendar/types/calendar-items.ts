@@ -19,6 +19,7 @@ export type SerializedEventNote = {
   id: string;
   personId: string | null;
   preferenceId: string | null;
+  personNoteId: string | null;
   category: string;
   customCategoryId: string | null;
   label: string;
@@ -188,6 +189,7 @@ export function serializeEventNote(note: {
   id: string;
   personId: string | null;
   preferenceId?: string | null;
+  personNoteId?: string | null;
   category: string;
   customCategoryId?: string | null;
   label: string;
@@ -198,12 +200,30 @@ export function serializeEventNote(note: {
     id: note.id,
     personId: note.personId,
     preferenceId: note.preferenceId ?? null,
+    personNoteId: note.personNoteId ?? null,
     category: note.category,
     customCategoryId: note.customCategoryId ?? null,
     label: note.label,
     value: note.value,
     person: note.person,
   };
+}
+
+function resolveReminderDaysBefore(event: {
+  reminders?: Array<{ daysBefore: number }>;
+  reminderDaysBefore?: number[];
+}) {
+  if (event.reminders?.length) {
+    return event.reminders
+      .map((reminder) => reminder.daysBefore)
+      .sort((left, right) => left - right);
+  }
+
+  if (event.reminderDaysBefore?.length) {
+    return [...event.reminderDaysBefore].sort((left, right) => left - right);
+  }
+
+  return [];
 }
 
 export function serializeEvent(event: {
@@ -215,11 +235,13 @@ export function serializeEvent(event: {
   isUndated: boolean;
   isRecurring?: boolean;
   reminders?: Array<{ daysBefore: number }>;
+  reminderDaysBefore?: number[];
   eventPeople: Array<{ person: { id: string; name: string } }>;
   eventNotes?: Array<{
     id: string;
     personId: string | null;
     preferenceId?: string | null;
+    personNoteId?: string | null;
     category: string;
     customCategoryId?: string | null;
     label: string;
@@ -237,10 +259,7 @@ export function serializeEvent(event: {
       : null,
     isUndated: event.isUndated,
     isRecurring: event.isRecurring ?? false,
-    reminderDaysBefore:
-      event.reminders
-        ?.map((reminder) => reminder.daysBefore)
-        .sort((left, right) => left - right) ?? [],
+    reminderDaysBefore: resolveReminderDaysBefore(event),
     eventPeople: event.eventPeople,
     eventNotes: event.eventNotes?.map((note) => serializeEventNote(note)) ?? [],
   };

@@ -71,13 +71,14 @@ export function TodayPageClient({
     return serializeEvent({
       id: summary.id,
       title: summary.title,
-      description: null,
+      description: summary.description,
       date: summary.date,
       occurrenceDate: selectedOccurrenceDate ?? summary.date,
       isUndated: summary.isUndated,
       isRecurring: summary.isRecurring,
+      reminderDaysBefore: summary.reminderDaysBefore,
       eventPeople: summary.eventPeople,
-      eventNotes: [],
+      eventNotes: summary.eventNotes,
     });
   }, [allDatedEvents, events, selectedEventId, selectedOccurrenceDate]);
 

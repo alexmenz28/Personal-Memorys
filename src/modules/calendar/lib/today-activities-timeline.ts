@@ -67,10 +67,13 @@ function collectActivityItems({
     catalog.set(event.id, {
       id: event.id,
       title: event.title,
+      description: event.description,
       date: event.date,
       isRecurring: event.isRecurring,
       isUndated: event.isUndated,
+      reminderDaysBefore: event.reminderDaysBefore,
       eventPeople: event.eventPeople,
+      eventNotes: event.eventNotes,
     });
   }
 

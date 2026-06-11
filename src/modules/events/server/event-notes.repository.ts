@@ -3,6 +3,7 @@ import "server-only";
 import type { PreferenceCategory } from "@/generated/prisma/client";
 import type {
   CreateEventNoteFromPreferenceInput,
+  CreateEventNoteFromPersonNoteInput,
   CreateEventNoteInput,
 } from "@/modules/events/schemas/event-note.schema";
 import { db } from "@/shared/server/db";
@@ -102,6 +103,56 @@ export const eventNotesRepository = {
         customCategoryId: preference.customCategoryId,
         label: preference.label,
         value: preference.value,
+      },
+      include: {
+        person: { select: { id: true, name: true } },
+        customCategory: { select: { id: true, label: true } },
+      },
+    });
+  },
+
+  async createFromPersonNote(
+    userProfileId: string,
+    data: CreateEventNoteFromPersonNoteInput,
+  ) {
+    await assertPersonLinkedToEvent(data.eventId, data.personId, userProfileId);
+
+    const existing = await db.eventNote.findFirst({
+      where: {
+        eventId: data.eventId,
+        personNoteId: data.personNoteId,
+      },
+      select: { id: true },
+    });
+
+    if (existing) {
+      throw new Error("This note is already linked to this event.");
+    }
+
+    const personNote = await db.personNote.findFirst({
+      where: {
+        id: data.personNoteId,
+        personId: data.personId,
+        person: { userProfileId },
+      },
+    });
+
+    if (!personNote) {
+      throw new Error("Note not found.");
+    }
+
+    const content = personNote.content.trim();
+    const label =
+      content.length > 80 ? `${content.slice(0, 77).trimEnd()}…` : content;
+
+    return db.eventNote.create({
+      data: {
+        eventId: data.eventId,
+        personId: data.personId,
+        personNoteId: personNote.id,
+        category: "OTHER",
+        label,
+        value: content,
       },
       include: {
         person: { select: { id: true, name: true } },

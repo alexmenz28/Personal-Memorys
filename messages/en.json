@@ -123,10 +123,10 @@
       "undated": "Event log"
     },
     "eventActivityHint": {
-      "past": "Pick one of their saved preferences and log it as what happened at this event.",
-      "today": "Pick a preference and log what is happening today.",
-      "future": "Pick a preference and log the plan for this event.",
-      "undated": "Pick a preference and log it for this undated event."
+      "past": "Link a preference or note from this person to what happened at the event.",
+      "today": "Link a preference or note to what is happening today.",
+      "future": "Link a preference or note as the plan for this event.",
+      "undated": "Link a preference or note for this undated event."
     },
     "eventActivityLog": {
       "past": "Log what they did",
@@ -136,11 +136,18 @@
     },
     "eventActivityNeedPeople": "Link at least one person to the event before logging activity.",
     "eventActivityPerson": "Person",
-    "eventActivityLoading": "Loading preferences…",
+    "eventActivityLoading": "Loading person details…",
+    "eventActivityReferenceType": "Reference type",
+    "eventActivityReferencePreference": "Preference",
+    "eventActivityReferenceNote": "Note",
     "eventActivityNoPreferences": "This person has no saved preferences yet.",
+    "eventActivityNoPersonNotes": "This person has no saved notes yet.",
     "eventActivityAllLogged": "You've already logged all their preferences for this event.",
+    "eventActivityAllNotesLogged": "You've already linked all their notes for this event.",
     "eventActivityPickPreference": "Choose a preference",
+    "eventActivityPickPersonNote": "Choose a note",
     "eventActivityAddPreference": "Add preference in their profile",
+    "eventActivityAddPersonNote": "Add note in their profile",
     "noEventActivity": "No activity logged for this event yet.",
     "viewPersonProfile": "View profile",
     "reminderDays": {
