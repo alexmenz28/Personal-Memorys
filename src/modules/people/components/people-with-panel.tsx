@@ -11,6 +11,7 @@ import type { CustomPreferenceCategory } from "@/modules/people/lib/preference-c
 import { toIsoString } from "@/shared/lib/dates";
 import { PersonDetailSkeleton } from "@/shared/components/layout/content-skeleton";
 import { PageActions, SetPageChrome } from "@/shared/components/layout/page-chrome";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -66,7 +67,7 @@ export function PeopleWithPanel({
   customPreferenceCategories,
 }: PeopleWithPanelProps) {
   const t = useTranslations("people");
-  const [people, setPeople] = useState(initialPeople);
+  const [people, setPeople] = useServerSyncedState(initialPeople);
   const [panelPersonId, setPanelPersonId] = useState<string | null>(
     initialSelectedPersonId,
   );
@@ -79,6 +80,11 @@ export function PeopleWithPanel({
   const [eventPersonIds, setEventPersonIds] = useState<string[]>([]);
   const fetchRequestRef = useRef(0);
   const loadErrorMessageRef = useRef(t("loadError"));
+  const initialSelectedPersonRef = useRef(initialSelectedPerson);
+
+  useEffect(() => {
+    initialSelectedPersonRef.current = initialSelectedPerson;
+  }, [initialSelectedPerson]);
 
   useEffect(() => {
     loadErrorMessageRef.current = t("loadError");
@@ -129,9 +135,7 @@ export function PeopleWithPanel({
     loadPersonRef.current = loadPerson;
   }, [loadPerson]);
 
-  // Sync only on server-driven navigation (?person= in URL from RSC).
-  // Do not reset panel when initialSelectedPersonId is null — that would
-  // wipe a client-side selection when this effect re-runs.
+  // Sync only when the URL-driven person id changes (server navigation).
   useEffect(() => {
     if (!initialSelectedPersonId) {
       return;
@@ -146,11 +150,10 @@ export function PeopleWithPanel({
 
       setPanelPersonId(initialSelectedPersonId);
 
-      if (
-        initialSelectedPerson &&
-        initialSelectedPerson.id === initialSelectedPersonId
-      ) {
-        setPanelPerson(initialSelectedPerson);
+      const serverPerson = initialSelectedPersonRef.current;
+
+      if (serverPerson?.id === initialSelectedPersonId) {
+        setPanelPerson(serverPerson);
         setPanelLoading(false);
         setPanelError(null);
         return;
@@ -162,7 +165,7 @@ export function PeopleWithPanel({
     return () => {
       cancelled = true;
     };
-  }, [initialSelectedPerson, initialSelectedPersonId]);
+  }, [initialSelectedPersonId]);
 
   const openPerson = useCallback(
     (personId: string) => {
@@ -208,6 +211,8 @@ export function PeopleWithPanel({
             ? {
                 ...person,
                 name: updatedPerson.name,
+                relationship: updatedPerson.relationship,
+                notes: updatedPerson.notes,
                 _count: {
                   preferences: updatedPerson.preferences.length,
                   personNotes: updatedPerson.personNotes.length,

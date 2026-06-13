@@ -20,6 +20,7 @@ import {
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
 import { matchesAnnualDate } from "@/shared/lib/recurring-events";
 import { useCallback, useMemo, useState } from "react";
 
@@ -44,8 +45,8 @@ export function TodayPageClient({
   allDatedEvents: initialAllDatedEvents,
   people,
 }: TodayPageClientProps) {
-  const [events, setEvents] = useState(initialEvents);
-  const [allDatedEvents, setAllDatedEvents] = useState(initialAllDatedEvents);
+  const [events, setEvents] = useServerSyncedState(initialEvents);
+  const [allDatedEvents, setAllDatedEvents] = useServerSyncedState(initialAllDatedEvents);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [selectedOccurrenceDate, setSelectedOccurrenceDate] = useState<
     string | null

@@ -12,7 +12,8 @@ import {
   type SerializedHoliday,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
-import { useCallback, useState } from "react";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
+import { useCallback } from "react";
 
 type UpcomingPageClientProps = {
   title: string;
@@ -35,7 +36,7 @@ export function UpcomingPageClient({
   events: initialEvents,
   people,
 }: UpcomingPageClientProps) {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useServerSyncedState(initialEvents);
 
   const handleEventCreated = useCallback(
     (created: Parameters<typeof serializeEvent>[0]) => {

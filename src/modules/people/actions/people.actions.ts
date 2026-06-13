@@ -98,6 +98,7 @@ export async function updatePerson(personId: string, input: unknown) {
     const person = await peopleRepository.update(personId, profile.id, data);
 
     invalidatePersonData(personId, profile.id);
+    revalidatePath("/people");
     return person;
   });
 }

@@ -1,5 +1,8 @@
 "use client";
 
+import { AuthDivider } from "@/components/auth/auth-divider";
+import { GoogleAuthButton } from "@/components/auth/google-auth-button";
+import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +19,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function SignUpForm() {
+type SignUpFormProps = {
+  googleEnabled: boolean;
+};
+
+export function SignUpForm({ googleEnabled }: SignUpFormProps) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -81,10 +88,9 @@ export function SignUpForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">{t("password")}</Label>
-            <Input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               autoComplete="new-password"
               minLength={8}
               required
@@ -93,6 +99,12 @@ export function SignUpForm() {
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? t("signingUp") : t("signUp")}
           </Button>
+          {googleEnabled ? (
+            <>
+              <AuthDivider />
+              <GoogleAuthButton mode="sign-up" />
+            </>
+          ) : null}
           <p className="text-center text-sm text-muted-foreground">
             {t("hasAccount")}{" "}
             <Link href="/sign-in" className="text-foreground underline-offset-4 hover:underline">

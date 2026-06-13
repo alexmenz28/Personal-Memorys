@@ -1,9 +1,9 @@
-import { PostAuthRedirect } from "@/components/auth/post-auth-redirect";
 import { getPostAuthRedirectPath } from "@/modules/auth/server/redirect";
 import { resolveUserProfile } from "@/modules/auth/server/session";
 import { persistLocaleCookie } from "@/modules/profile/server/locale-cookie";
+import { NextResponse } from "next/server";
 
-export default async function AuthContinuePage() {
+export async function GET(request: Request) {
   const profile = await resolveUserProfile();
 
   if (profile?.locale) {
@@ -12,5 +12,5 @@ export default async function AuthContinuePage() {
 
   const target = await getPostAuthRedirectPath();
 
-  return <PostAuthRedirect to={target} />;
+  return NextResponse.redirect(new URL(target, request.url));
 }

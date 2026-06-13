@@ -14,6 +14,7 @@ import {
   type CustomPreferenceCategory,
 } from "@/modules/people/lib/preference-categories";
 import { MAX_CUSTOM_PREFERENCE_CATEGORIES } from "@/modules/people/schemas/preference-category.schema";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
 import { Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export function PreferenceCategoriesCard({
   const tPeople = useTranslations("people");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const [customCategories, setCustomCategories] = useState(
+  const [customCategories, setCustomCategories] = useServerSyncedState(
     initialCustomCategories,
   );
   const [label, setLabel] = useState("");

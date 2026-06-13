@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormSelect } from "@/components/ui/form-select";
 import { Label } from "@/components/ui/label";
 import { ProfileLocaleFields } from "@/components/profile/profile-locale-fields";
+import { AccountSecurityCard } from "@/components/settings/account-security-card";
 import { DeleteAccountCard } from "@/components/settings/delete-account-card";
 import { ExportDataCard } from "@/components/settings/export-data-card";
 import { PreferenceCategoriesCard } from "@/components/settings/preference-categories-card";
@@ -16,6 +17,7 @@ import {
   type UpdateProfileInput,
 } from "@/modules/profile/schemas/profile.schema";
 import { FormActions } from "@/shared/components/layout/form-actions";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
 import { formatHourLabel } from "@/shared/lib/dates";
 import type { ThemePreference } from "@/lib/theme";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,6 +28,7 @@ type SettingsFormProps = {
   initialValues: UpdateProfileInput;
   initialTheme: ThemePreference;
   userEmail: string;
+  googleEnabled: boolean;
   customPreferenceCategories: CustomPreferenceCategory[];
 };
 
@@ -43,6 +46,7 @@ export function SettingsForm({
   initialValues,
   initialTheme,
   userEmail,
+  googleEnabled,
   customPreferenceCategories,
 }: SettingsFormProps) {
   const t = useTranslations("settings");
@@ -50,8 +54,8 @@ export function SettingsForm({
   const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [form, setForm] = useState(initialValues);
-  const [savedValues, setSavedValues] = useState(initialValues);
+  const [form, setForm] = useServerSyncedState(initialValues);
+  const [savedValues, setSavedValues] = useServerSyncedState(initialValues);
   const [error, setError] = useState<string | null>(null);
   const [showSaved, setShowSaved] = useState(false);
 
@@ -171,6 +175,11 @@ export function SettingsForm({
 
       <PreferenceCategoriesCard
         customCategories={customPreferenceCategories}
+      />
+
+      <AccountSecurityCard
+        userEmail={userEmail}
+        googleEnabled={googleEnabled}
       />
 
       <ExportDataCard />

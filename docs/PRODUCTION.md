@@ -2,7 +2,7 @@
 
 ## Authentication (Better Auth)
 
-The app uses **Better Auth** with email/password — no third-party auth provider, no “Development mode” banner.
+The app uses **Better Auth** with email/password and optional Google OAuth.
 
 ### Required environment variables
 
@@ -11,6 +11,25 @@ The app uses **Better Auth** with email/password — no third-party auth provide
 | `DATABASE_URL` | Neon pooler URL | Same |
 | `BETTER_AUTH_SECRET` | `npx auth@latest secret` | Same secret (32+ chars) |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | `https://personal-memorys.vercel.app` |
+
+### Google OAuth (optional)
+
+| Variable | Purpose |
+|----------|---------|
+| `GOOGLE_CLIENT_ID` | OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | OAuth client secret |
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → **OAuth 2.0 Client** (Web application).
+2. **Authorized redirect URIs:**
+   - `http://localhost:3000/api/auth/callback/google`
+   - `https://personal-memorys.vercel.app/api/auth/callback/google`
+3. Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` to `.env` and Vercel.
+
+Without these variables, the Google button is hidden; email/password still works.
+
+**Account linking:** If a user signed up with email/password, they can link Google later in **Settings → Account security**. By default the Google account must use the **same email** as the app account. If the emails differ, linking fails unless you enable `allowDifferentEmails` in `auth.ts` (not recommended for personal use).
+
+**Password reset** uses the same Resend config as email reminders (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`).
 
 Generate a secret:
 
@@ -42,8 +61,9 @@ The old `auth_user_id` column was renamed from `clerk_user_id`; existing profile
 
 | Variable | Purpose |
 |----------|---------|
-| `RESEND_API_KEY` | Email reminders |
+| `RESEND_API_KEY` | Email reminders + password reset |
 | `RESEND_FROM_EMAIL` | Sender address |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google sign-in & account linking |
 | `INNGEST_EVENT_KEY` | Background jobs |
 
 ## Local development

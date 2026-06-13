@@ -14,6 +14,7 @@ import {
   type SerializedEvent,
 } from "@/modules/calendar/types/calendar-items";
 import { AppPage } from "@/shared/components/layout/page-chrome";
+import { useServerSyncedState } from "@/shared/hooks/use-server-synced-state";
 import { useCallback, useState } from "react";
 
 type UndatedPageClientProps = {
@@ -31,7 +32,7 @@ export function UndatedPageClient({
   events: initialEvents,
   people,
 }: UndatedPageClientProps) {
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useServerSyncedState(initialEvents);
   const [selectedEvent, setSelectedEvent] = useState<SerializedEvent | null>(
     null,
   );

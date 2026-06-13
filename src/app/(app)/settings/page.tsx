@@ -1,4 +1,5 @@
 import { SettingsForm } from "@/components/settings/settings-form";
+import { isGoogleAuthEnabled } from "@/modules/auth/server/auth";
 import { requireCurrentUserProfile } from "@/modules/auth/server/session";
 import { preferenceCategoryRepository } from "@/modules/people/server/preference-category.repository";
 import { AppPage } from "@/shared/components/layout/page-chrome";
@@ -15,6 +16,7 @@ export default async function SettingsPage() {
       <SettingsForm
         initialTheme={profile.theme}
         userEmail={profile.email}
+        googleEnabled={isGoogleAuthEnabled}
         customPreferenceCategories={customPreferenceCategories}
         initialValues={{
           locale: profile.locale as "en" | "es",
